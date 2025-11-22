@@ -1,0 +1,1949 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> programa
+Rule 1     programa -> PROGRAM IDENT corpo DOT
+Rule 2     corpo -> dc BEGIN comandos END
+Rule 3     dc -> dc_v mais_dc
+Rule 4     dc -> dc_p mais_dc
+Rule 5     dc -> empty
+Rule 6     mais_dc -> SEMICOLON dc
+Rule 7     mais_dc -> empty
+Rule 8     dc_v -> VAR variaveis COLON tipo_var
+Rule 9     tipo_var -> REAL
+Rule 10    tipo_var -> INTEGER
+Rule 11    variaveis -> IDENT mais_var
+Rule 12    mais_var -> COMMA variaveis
+Rule 13    mais_var -> empty
+Rule 14    inicio_escopo -> empty
+Rule 15    fim_escopo -> empty
+Rule 16    dc_p -> PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo
+Rule 17    parameters -> LPAREN lista_par RPAREN
+Rule 18    parameters -> empty
+Rule 19    lista_par -> variaveis COLON tipo_var mais_par
+Rule 20    mais_par -> SEMICOLON lista_par
+Rule 21    mais_par -> empty
+Rule 22    corpo_p -> dc_loc BEGIN comandos END
+Rule 23    dc_loc -> dc_v mais_dcloc
+Rule 24    dc_loc -> empty
+Rule 25    mais_dcloc -> SEMICOLON dc_v mais_dcloc
+Rule 26    mais_dcloc -> empty
+Rule 27    comandos -> comando mais_comandos
+Rule 28    mais_comandos -> comandos
+Rule 29    mais_comandos -> empty
+Rule 30    pt_virgula_opc -> SEMICOLON
+Rule 31    pt_virgula_opc -> empty
+Rule 32    comando -> READ LPAREN IDENT RPAREN pt_virgula_opc
+Rule 33    comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc
+Rule 34    comando -> IDENT ASSIGN expressao pt_virgula_opc
+Rule 35    comando -> IF condicao THEN comandos pfalsa DOLLAR
+Rule 36    condicao -> expressao relacao expressao
+Rule 37    pfalsa -> ELSE comandos
+Rule 38    pfalsa -> empty
+Rule 39    comando -> WHILE condicao DO comandos DOLLAR
+Rule 40    comando -> IDENT lista_arg pt_virgula_opc
+Rule 41    lista_arg -> LPAREN argumentos RPAREN
+Rule 42    lista_arg -> empty
+Rule 43    argumentos -> IDENT mais_ident
+Rule 44    mais_ident -> COMMA argumentos
+Rule 45    mais_ident -> empty
+Rule 46    relacao -> EQ
+Rule 47    relacao -> NEQ
+Rule 48    relacao -> GTE
+Rule 49    relacao -> LTE
+Rule 50    relacao -> GT
+Rule 51    relacao -> LT
+Rule 52    expressao -> termo outros_termos
+Rule 53    outros_termos -> op_ad termo outros_termos
+Rule 54    outros_termos -> empty
+Rule 55    op_ad -> PLUS
+Rule 56    op_ad -> MINUS
+Rule 57    termo -> op_un fator mais_fatores
+Rule 58    op_un -> MINUS
+Rule 59    op_un -> empty
+Rule 60    mais_fatores -> op_mul fator mais_fatores
+Rule 61    mais_fatores -> empty
+Rule 62    op_mul -> TIMES
+Rule 63    op_mul -> DIVIDE
+Rule 64    fator -> IDENT
+Rule 65    fator -> NUM_INT
+Rule 66    fator -> NUM_REAL
+Rule 67    fator -> LPAREN expressao RPAREN
+Rule 68    empty -> <empty>
+
+Terminals, with rules where they appear
+
+ASSIGN               : 34
+BEGIN                : 2 22
+COLON                : 8 19
+COMMA                : 12 44
+DIVIDE               : 63
+DO                   : 39
+DOLLAR               : 35 39
+DOT                  : 1
+ELSE                 : 37
+END                  : 2 22
+EQ                   : 46
+GT                   : 50
+GTE                  : 48
+IDENT                : 1 11 16 32 33 34 40 43 64
+IF                   : 35
+INTEGER              : 10
+LPAREN               : 17 32 33 41 67
+LT                   : 51
+LTE                  : 49
+MINUS                : 56 58
+NEQ                  : 47
+NUM_INT              : 65
+NUM_REAL             : 66
+PLUS                 : 55
+PROCEDURE            : 16
+PROGRAM              : 1
+READ                 : 32
+REAL                 : 9
+RPAREN               : 17 32 33 41 67
+SEMICOLON            : 6 20 25 30
+THEN                 : 35
+TIMES                : 62
+VAR                  : 8
+WHILE                : 39
+WRITE                : 33
+error                : 
+
+Nonterminals, with rules where they appear
+
+argumentos           : 41 44
+comando              : 27
+comandos             : 2 22 28 35 37 39
+condicao             : 35 39
+corpo                : 1
+corpo_p              : 16
+dc                   : 2 6
+dc_loc               : 22
+dc_p                 : 4
+dc_v                 : 3 23 25
+empty                : 5 7 13 14 15 18 21 24 26 29 31 38 42 45 54 59 61
+expressao            : 34 36 36 67
+fator                : 57 60
+fim_escopo           : 16
+inicio_escopo        : 16
+lista_arg            : 40
+lista_par            : 17 20
+mais_comandos        : 27
+mais_dc              : 3 4
+mais_dcloc           : 23 25
+mais_fatores         : 57 60
+mais_ident           : 43
+mais_par             : 19
+mais_var             : 11
+op_ad                : 53
+op_mul               : 60
+op_un                : 57
+outros_termos        : 52 53
+parameters           : 16
+pfalsa               : 35
+programa             : 0
+pt_virgula_opc       : 32 33 34 40
+relacao              : 36
+termo                : 52 53
+tipo_var             : 8 19
+variaveis            : 8 12 19
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . programa
+    (1) programa -> . PROGRAM IDENT corpo DOT
+
+    PROGRAM         shift and go to state 2
+
+    programa                       shift and go to state 1
+
+state 1
+
+    (0) S' -> programa .
+
+
+
+state 2
+
+    (1) programa -> PROGRAM . IDENT corpo DOT
+
+    IDENT           shift and go to state 3
+
+
+state 3
+
+    (1) programa -> PROGRAM IDENT . corpo DOT
+    (2) corpo -> . dc BEGIN comandos END
+    (3) dc -> . dc_v mais_dc
+    (4) dc -> . dc_p mais_dc
+    (5) dc -> . empty
+    (8) dc_v -> . VAR variaveis COLON tipo_var
+    (16) dc_p -> . PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo
+    (68) empty -> .
+
+    VAR             shift and go to state 9
+    PROCEDURE       shift and go to state 10
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    corpo                          shift and go to state 4
+    dc                             shift and go to state 5
+    dc_v                           shift and go to state 6
+    dc_p                           shift and go to state 7
+    empty                          shift and go to state 8
+
+state 4
+
+    (1) programa -> PROGRAM IDENT corpo . DOT
+
+    DOT             shift and go to state 11
+
+
+state 5
+
+    (2) corpo -> dc . BEGIN comandos END
+
+    BEGIN           shift and go to state 12
+
+
+state 6
+
+    (3) dc -> dc_v . mais_dc
+    (6) mais_dc -> . SEMICOLON dc
+    (7) mais_dc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 14
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    mais_dc                        shift and go to state 13
+    empty                          shift and go to state 15
+
+state 7
+
+    (4) dc -> dc_p . mais_dc
+    (6) mais_dc -> . SEMICOLON dc
+    (7) mais_dc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 14
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    mais_dc                        shift and go to state 16
+    empty                          shift and go to state 15
+
+state 8
+
+    (5) dc -> empty .
+
+    BEGIN           reduce using rule 5 (dc -> empty .)
+
+
+state 9
+
+    (8) dc_v -> VAR . variaveis COLON tipo_var
+    (11) variaveis -> . IDENT mais_var
+
+    IDENT           shift and go to state 18
+
+    variaveis                      shift and go to state 17
+
+state 10
+
+    (16) dc_p -> PROCEDURE . IDENT inicio_escopo parameters corpo_p fim_escopo
+
+    IDENT           shift and go to state 19
+
+
+state 11
+
+    (1) programa -> PROGRAM IDENT corpo DOT .
+
+    $end            reduce using rule 1 (programa -> PROGRAM IDENT corpo DOT .)
+
+
+state 12
+
+    (2) corpo -> dc BEGIN . comandos END
+    (27) comandos -> . comando mais_comandos
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comandos                       shift and go to state 20
+    comando                        shift and go to state 21
+
+state 13
+
+    (3) dc -> dc_v mais_dc .
+
+    BEGIN           reduce using rule 3 (dc -> dc_v mais_dc .)
+
+
+state 14
+
+    (6) mais_dc -> SEMICOLON . dc
+    (3) dc -> . dc_v mais_dc
+    (4) dc -> . dc_p mais_dc
+    (5) dc -> . empty
+    (8) dc_v -> . VAR variaveis COLON tipo_var
+    (16) dc_p -> . PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo
+    (68) empty -> .
+
+    VAR             shift and go to state 9
+    PROCEDURE       shift and go to state 10
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    dc                             shift and go to state 27
+    dc_v                           shift and go to state 6
+    dc_p                           shift and go to state 7
+    empty                          shift and go to state 8
+
+state 15
+
+    (7) mais_dc -> empty .
+
+    BEGIN           reduce using rule 7 (mais_dc -> empty .)
+
+
+state 16
+
+    (4) dc -> dc_p mais_dc .
+
+    BEGIN           reduce using rule 4 (dc -> dc_p mais_dc .)
+
+
+state 17
+
+    (8) dc_v -> VAR variaveis . COLON tipo_var
+
+    COLON           shift and go to state 28
+
+
+state 18
+
+    (11) variaveis -> IDENT . mais_var
+    (12) mais_var -> . COMMA variaveis
+    (13) mais_var -> . empty
+    (68) empty -> .
+
+    COMMA           shift and go to state 30
+    COLON           reduce using rule 68 (empty -> .)
+
+    mais_var                       shift and go to state 29
+    empty                          shift and go to state 31
+
+state 19
+
+    (16) dc_p -> PROCEDURE IDENT . inicio_escopo parameters corpo_p fim_escopo
+    (14) inicio_escopo -> . empty
+    (68) empty -> .
+
+    LPAREN          reduce using rule 68 (empty -> .)
+    VAR             reduce using rule 68 (empty -> .)
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    inicio_escopo                  shift and go to state 32
+    empty                          shift and go to state 33
+
+state 20
+
+    (2) corpo -> dc BEGIN comandos . END
+
+    END             shift and go to state 34
+
+
+state 21
+
+    (27) comandos -> comando . mais_comandos
+    (28) mais_comandos -> . comandos
+    (29) mais_comandos -> . empty
+    (27) comandos -> . comando mais_comandos
+    (68) empty -> .
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comando                        shift and go to state 21
+    mais_comandos                  shift and go to state 35
+    comandos                       shift and go to state 36
+    empty                          shift and go to state 37
+
+state 22
+
+    (32) comando -> READ . LPAREN IDENT RPAREN pt_virgula_opc
+
+    LPAREN          shift and go to state 38
+
+
+state 23
+
+    (34) comando -> IDENT . ASSIGN expressao pt_virgula_opc
+    (40) comando -> IDENT . lista_arg pt_virgula_opc
+    (41) lista_arg -> . LPAREN argumentos RPAREN
+    (42) lista_arg -> . empty
+    (68) empty -> .
+
+    ASSIGN          shift and go to state 39
+    LPAREN          shift and go to state 41
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    lista_arg                      shift and go to state 40
+    empty                          shift and go to state 42
+
+state 24
+
+    (33) comando -> WRITE . LPAREN IDENT RPAREN pt_virgula_opc
+
+    LPAREN          shift and go to state 43
+
+
+state 25
+
+    (35) comando -> IF . condicao THEN comandos pfalsa DOLLAR
+    (36) condicao -> . expressao relacao expressao
+    (52) expressao -> . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    condicao                       shift and go to state 44
+    expressao                      shift and go to state 45
+    termo                          shift and go to state 46
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 26
+
+    (39) comando -> WHILE . condicao DO comandos DOLLAR
+    (36) condicao -> . expressao relacao expressao
+    (52) expressao -> . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    condicao                       shift and go to state 50
+    expressao                      shift and go to state 45
+    termo                          shift and go to state 46
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 27
+
+    (6) mais_dc -> SEMICOLON dc .
+
+    BEGIN           reduce using rule 6 (mais_dc -> SEMICOLON dc .)
+
+
+state 28
+
+    (8) dc_v -> VAR variaveis COLON . tipo_var
+    (9) tipo_var -> . REAL
+    (10) tipo_var -> . INTEGER
+
+    REAL            shift and go to state 52
+    INTEGER         shift and go to state 53
+
+    tipo_var                       shift and go to state 51
+
+state 29
+
+    (11) variaveis -> IDENT mais_var .
+
+    COLON           reduce using rule 11 (variaveis -> IDENT mais_var .)
+
+
+state 30
+
+    (12) mais_var -> COMMA . variaveis
+    (11) variaveis -> . IDENT mais_var
+
+    IDENT           shift and go to state 18
+
+    variaveis                      shift and go to state 54
+
+state 31
+
+    (13) mais_var -> empty .
+
+    COLON           reduce using rule 13 (mais_var -> empty .)
+
+
+state 32
+
+    (16) dc_p -> PROCEDURE IDENT inicio_escopo . parameters corpo_p fim_escopo
+    (17) parameters -> . LPAREN lista_par RPAREN
+    (18) parameters -> . empty
+    (68) empty -> .
+
+    LPAREN          shift and go to state 56
+    VAR             reduce using rule 68 (empty -> .)
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    parameters                     shift and go to state 55
+    empty                          shift and go to state 57
+
+state 33
+
+    (14) inicio_escopo -> empty .
+
+    LPAREN          reduce using rule 14 (inicio_escopo -> empty .)
+    VAR             reduce using rule 14 (inicio_escopo -> empty .)
+    BEGIN           reduce using rule 14 (inicio_escopo -> empty .)
+
+
+state 34
+
+    (2) corpo -> dc BEGIN comandos END .
+
+    DOT             reduce using rule 2 (corpo -> dc BEGIN comandos END .)
+
+
+state 35
+
+    (27) comandos -> comando mais_comandos .
+
+    END             reduce using rule 27 (comandos -> comando mais_comandos .)
+    ELSE            reduce using rule 27 (comandos -> comando mais_comandos .)
+    DOLLAR          reduce using rule 27 (comandos -> comando mais_comandos .)
+
+
+state 36
+
+    (28) mais_comandos -> comandos .
+
+    END             reduce using rule 28 (mais_comandos -> comandos .)
+    ELSE            reduce using rule 28 (mais_comandos -> comandos .)
+    DOLLAR          reduce using rule 28 (mais_comandos -> comandos .)
+
+
+state 37
+
+    (29) mais_comandos -> empty .
+
+    END             reduce using rule 29 (mais_comandos -> empty .)
+    ELSE            reduce using rule 29 (mais_comandos -> empty .)
+    DOLLAR          reduce using rule 29 (mais_comandos -> empty .)
+
+
+state 38
+
+    (32) comando -> READ LPAREN . IDENT RPAREN pt_virgula_opc
+
+    IDENT           shift and go to state 58
+
+
+state 39
+
+    (34) comando -> IDENT ASSIGN . expressao pt_virgula_opc
+    (52) expressao -> . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    expressao                      shift and go to state 59
+    termo                          shift and go to state 46
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 40
+
+    (40) comando -> IDENT lista_arg . pt_virgula_opc
+    (30) pt_virgula_opc -> . SEMICOLON
+    (31) pt_virgula_opc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 61
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    pt_virgula_opc                 shift and go to state 60
+    empty                          shift and go to state 62
+
+state 41
+
+    (41) lista_arg -> LPAREN . argumentos RPAREN
+    (43) argumentos -> . IDENT mais_ident
+
+    IDENT           shift and go to state 64
+
+    argumentos                     shift and go to state 63
+
+state 42
+
+    (42) lista_arg -> empty .
+
+    SEMICOLON       reduce using rule 42 (lista_arg -> empty .)
+    READ            reduce using rule 42 (lista_arg -> empty .)
+    WRITE           reduce using rule 42 (lista_arg -> empty .)
+    IDENT           reduce using rule 42 (lista_arg -> empty .)
+    IF              reduce using rule 42 (lista_arg -> empty .)
+    WHILE           reduce using rule 42 (lista_arg -> empty .)
+    END             reduce using rule 42 (lista_arg -> empty .)
+    ELSE            reduce using rule 42 (lista_arg -> empty .)
+    DOLLAR          reduce using rule 42 (lista_arg -> empty .)
+
+
+state 43
+
+    (33) comando -> WRITE LPAREN . IDENT RPAREN pt_virgula_opc
+
+    IDENT           shift and go to state 65
+
+
+state 44
+
+    (35) comando -> IF condicao . THEN comandos pfalsa DOLLAR
+
+    THEN            shift and go to state 66
+
+
+state 45
+
+    (36) condicao -> expressao . relacao expressao
+    (46) relacao -> . EQ
+    (47) relacao -> . NEQ
+    (48) relacao -> . GTE
+    (49) relacao -> . LTE
+    (50) relacao -> . GT
+    (51) relacao -> . LT
+
+    EQ              shift and go to state 68
+    NEQ             shift and go to state 69
+    GTE             shift and go to state 70
+    LTE             shift and go to state 71
+    GT              shift and go to state 72
+    LT              shift and go to state 73
+
+    relacao                        shift and go to state 67
+
+state 46
+
+    (52) expressao -> termo . outros_termos
+    (53) outros_termos -> . op_ad termo outros_termos
+    (54) outros_termos -> . empty
+    (55) op_ad -> . PLUS
+    (56) op_ad -> . MINUS
+    (68) empty -> .
+
+    PLUS            shift and go to state 77
+    MINUS           shift and go to state 78
+    EQ              reduce using rule 68 (empty -> .)
+    NEQ             reduce using rule 68 (empty -> .)
+    GTE             reduce using rule 68 (empty -> .)
+    LTE             reduce using rule 68 (empty -> .)
+    GT              reduce using rule 68 (empty -> .)
+    LT              reduce using rule 68 (empty -> .)
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+    THEN            reduce using rule 68 (empty -> .)
+    DO              reduce using rule 68 (empty -> .)
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    outros_termos                  shift and go to state 74
+    op_ad                          shift and go to state 75
+    empty                          shift and go to state 76
+
+state 47
+
+    (57) termo -> op_un . fator mais_fatores
+    (64) fator -> . IDENT
+    (65) fator -> . NUM_INT
+    (66) fator -> . NUM_REAL
+    (67) fator -> . LPAREN expressao RPAREN
+
+    IDENT           shift and go to state 80
+    NUM_INT         shift and go to state 81
+    NUM_REAL        shift and go to state 82
+    LPAREN          shift and go to state 83
+
+    fator                          shift and go to state 79
+
+state 48
+
+    (58) op_un -> MINUS .
+
+    IDENT           reduce using rule 58 (op_un -> MINUS .)
+    NUM_INT         reduce using rule 58 (op_un -> MINUS .)
+    NUM_REAL        reduce using rule 58 (op_un -> MINUS .)
+    LPAREN          reduce using rule 58 (op_un -> MINUS .)
+
+
+state 49
+
+    (59) op_un -> empty .
+
+    IDENT           reduce using rule 59 (op_un -> empty .)
+    NUM_INT         reduce using rule 59 (op_un -> empty .)
+    NUM_REAL        reduce using rule 59 (op_un -> empty .)
+    LPAREN          reduce using rule 59 (op_un -> empty .)
+
+
+state 50
+
+    (39) comando -> WHILE condicao . DO comandos DOLLAR
+
+    DO              shift and go to state 84
+
+
+state 51
+
+    (8) dc_v -> VAR variaveis COLON tipo_var .
+
+    SEMICOLON       reduce using rule 8 (dc_v -> VAR variaveis COLON tipo_var .)
+    BEGIN           reduce using rule 8 (dc_v -> VAR variaveis COLON tipo_var .)
+
+
+state 52
+
+    (9) tipo_var -> REAL .
+
+    SEMICOLON       reduce using rule 9 (tipo_var -> REAL .)
+    BEGIN           reduce using rule 9 (tipo_var -> REAL .)
+    RPAREN          reduce using rule 9 (tipo_var -> REAL .)
+
+
+state 53
+
+    (10) tipo_var -> INTEGER .
+
+    SEMICOLON       reduce using rule 10 (tipo_var -> INTEGER .)
+    BEGIN           reduce using rule 10 (tipo_var -> INTEGER .)
+    RPAREN          reduce using rule 10 (tipo_var -> INTEGER .)
+
+
+state 54
+
+    (12) mais_var -> COMMA variaveis .
+
+    COLON           reduce using rule 12 (mais_var -> COMMA variaveis .)
+
+
+state 55
+
+    (16) dc_p -> PROCEDURE IDENT inicio_escopo parameters . corpo_p fim_escopo
+    (22) corpo_p -> . dc_loc BEGIN comandos END
+    (23) dc_loc -> . dc_v mais_dcloc
+    (24) dc_loc -> . empty
+    (8) dc_v -> . VAR variaveis COLON tipo_var
+    (68) empty -> .
+
+    VAR             shift and go to state 9
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    corpo_p                        shift and go to state 85
+    dc_loc                         shift and go to state 86
+    dc_v                           shift and go to state 87
+    empty                          shift and go to state 88
+
+state 56
+
+    (17) parameters -> LPAREN . lista_par RPAREN
+    (19) lista_par -> . variaveis COLON tipo_var mais_par
+    (11) variaveis -> . IDENT mais_var
+
+    IDENT           shift and go to state 18
+
+    lista_par                      shift and go to state 89
+    variaveis                      shift and go to state 90
+
+state 57
+
+    (18) parameters -> empty .
+
+    VAR             reduce using rule 18 (parameters -> empty .)
+    BEGIN           reduce using rule 18 (parameters -> empty .)
+
+
+state 58
+
+    (32) comando -> READ LPAREN IDENT . RPAREN pt_virgula_opc
+
+    RPAREN          shift and go to state 91
+
+
+state 59
+
+    (34) comando -> IDENT ASSIGN expressao . pt_virgula_opc
+    (30) pt_virgula_opc -> . SEMICOLON
+    (31) pt_virgula_opc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 61
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    pt_virgula_opc                 shift and go to state 92
+    empty                          shift and go to state 62
+
+state 60
+
+    (40) comando -> IDENT lista_arg pt_virgula_opc .
+
+    READ            reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    WRITE           reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    IDENT           reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    IF              reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    WHILE           reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    END             reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    ELSE            reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+    DOLLAR          reduce using rule 40 (comando -> IDENT lista_arg pt_virgula_opc .)
+
+
+state 61
+
+    (30) pt_virgula_opc -> SEMICOLON .
+
+    READ            reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    WRITE           reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    IDENT           reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    IF              reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    WHILE           reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    END             reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    ELSE            reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+    DOLLAR          reduce using rule 30 (pt_virgula_opc -> SEMICOLON .)
+
+
+state 62
+
+    (31) pt_virgula_opc -> empty .
+
+    READ            reduce using rule 31 (pt_virgula_opc -> empty .)
+    WRITE           reduce using rule 31 (pt_virgula_opc -> empty .)
+    IDENT           reduce using rule 31 (pt_virgula_opc -> empty .)
+    IF              reduce using rule 31 (pt_virgula_opc -> empty .)
+    WHILE           reduce using rule 31 (pt_virgula_opc -> empty .)
+    END             reduce using rule 31 (pt_virgula_opc -> empty .)
+    ELSE            reduce using rule 31 (pt_virgula_opc -> empty .)
+    DOLLAR          reduce using rule 31 (pt_virgula_opc -> empty .)
+
+
+state 63
+
+    (41) lista_arg -> LPAREN argumentos . RPAREN
+
+    RPAREN          shift and go to state 93
+
+
+state 64
+
+    (43) argumentos -> IDENT . mais_ident
+    (44) mais_ident -> . COMMA argumentos
+    (45) mais_ident -> . empty
+    (68) empty -> .
+
+    COMMA           shift and go to state 95
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    mais_ident                     shift and go to state 94
+    empty                          shift and go to state 96
+
+state 65
+
+    (33) comando -> WRITE LPAREN IDENT . RPAREN pt_virgula_opc
+
+    RPAREN          shift and go to state 97
+
+
+state 66
+
+    (35) comando -> IF condicao THEN . comandos pfalsa DOLLAR
+    (27) comandos -> . comando mais_comandos
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comandos                       shift and go to state 98
+    comando                        shift and go to state 21
+
+state 67
+
+    (36) condicao -> expressao relacao . expressao
+    (52) expressao -> . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    expressao                      shift and go to state 99
+    termo                          shift and go to state 46
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 68
+
+    (46) relacao -> EQ .
+
+    MINUS           reduce using rule 46 (relacao -> EQ .)
+    IDENT           reduce using rule 46 (relacao -> EQ .)
+    NUM_INT         reduce using rule 46 (relacao -> EQ .)
+    NUM_REAL        reduce using rule 46 (relacao -> EQ .)
+    LPAREN          reduce using rule 46 (relacao -> EQ .)
+
+
+state 69
+
+    (47) relacao -> NEQ .
+
+    MINUS           reduce using rule 47 (relacao -> NEQ .)
+    IDENT           reduce using rule 47 (relacao -> NEQ .)
+    NUM_INT         reduce using rule 47 (relacao -> NEQ .)
+    NUM_REAL        reduce using rule 47 (relacao -> NEQ .)
+    LPAREN          reduce using rule 47 (relacao -> NEQ .)
+
+
+state 70
+
+    (48) relacao -> GTE .
+
+    MINUS           reduce using rule 48 (relacao -> GTE .)
+    IDENT           reduce using rule 48 (relacao -> GTE .)
+    NUM_INT         reduce using rule 48 (relacao -> GTE .)
+    NUM_REAL        reduce using rule 48 (relacao -> GTE .)
+    LPAREN          reduce using rule 48 (relacao -> GTE .)
+
+
+state 71
+
+    (49) relacao -> LTE .
+
+    MINUS           reduce using rule 49 (relacao -> LTE .)
+    IDENT           reduce using rule 49 (relacao -> LTE .)
+    NUM_INT         reduce using rule 49 (relacao -> LTE .)
+    NUM_REAL        reduce using rule 49 (relacao -> LTE .)
+    LPAREN          reduce using rule 49 (relacao -> LTE .)
+
+
+state 72
+
+    (50) relacao -> GT .
+
+    MINUS           reduce using rule 50 (relacao -> GT .)
+    IDENT           reduce using rule 50 (relacao -> GT .)
+    NUM_INT         reduce using rule 50 (relacao -> GT .)
+    NUM_REAL        reduce using rule 50 (relacao -> GT .)
+    LPAREN          reduce using rule 50 (relacao -> GT .)
+
+
+state 73
+
+    (51) relacao -> LT .
+
+    MINUS           reduce using rule 51 (relacao -> LT .)
+    IDENT           reduce using rule 51 (relacao -> LT .)
+    NUM_INT         reduce using rule 51 (relacao -> LT .)
+    NUM_REAL        reduce using rule 51 (relacao -> LT .)
+    LPAREN          reduce using rule 51 (relacao -> LT .)
+
+
+state 74
+
+    (52) expressao -> termo outros_termos .
+
+    EQ              reduce using rule 52 (expressao -> termo outros_termos .)
+    NEQ             reduce using rule 52 (expressao -> termo outros_termos .)
+    GTE             reduce using rule 52 (expressao -> termo outros_termos .)
+    LTE             reduce using rule 52 (expressao -> termo outros_termos .)
+    GT              reduce using rule 52 (expressao -> termo outros_termos .)
+    LT              reduce using rule 52 (expressao -> termo outros_termos .)
+    SEMICOLON       reduce using rule 52 (expressao -> termo outros_termos .)
+    READ            reduce using rule 52 (expressao -> termo outros_termos .)
+    WRITE           reduce using rule 52 (expressao -> termo outros_termos .)
+    IDENT           reduce using rule 52 (expressao -> termo outros_termos .)
+    IF              reduce using rule 52 (expressao -> termo outros_termos .)
+    WHILE           reduce using rule 52 (expressao -> termo outros_termos .)
+    END             reduce using rule 52 (expressao -> termo outros_termos .)
+    ELSE            reduce using rule 52 (expressao -> termo outros_termos .)
+    DOLLAR          reduce using rule 52 (expressao -> termo outros_termos .)
+    THEN            reduce using rule 52 (expressao -> termo outros_termos .)
+    DO              reduce using rule 52 (expressao -> termo outros_termos .)
+    RPAREN          reduce using rule 52 (expressao -> termo outros_termos .)
+
+
+state 75
+
+    (53) outros_termos -> op_ad . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    termo                          shift and go to state 100
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 76
+
+    (54) outros_termos -> empty .
+
+    EQ              reduce using rule 54 (outros_termos -> empty .)
+    NEQ             reduce using rule 54 (outros_termos -> empty .)
+    GTE             reduce using rule 54 (outros_termos -> empty .)
+    LTE             reduce using rule 54 (outros_termos -> empty .)
+    GT              reduce using rule 54 (outros_termos -> empty .)
+    LT              reduce using rule 54 (outros_termos -> empty .)
+    SEMICOLON       reduce using rule 54 (outros_termos -> empty .)
+    READ            reduce using rule 54 (outros_termos -> empty .)
+    WRITE           reduce using rule 54 (outros_termos -> empty .)
+    IDENT           reduce using rule 54 (outros_termos -> empty .)
+    IF              reduce using rule 54 (outros_termos -> empty .)
+    WHILE           reduce using rule 54 (outros_termos -> empty .)
+    END             reduce using rule 54 (outros_termos -> empty .)
+    ELSE            reduce using rule 54 (outros_termos -> empty .)
+    DOLLAR          reduce using rule 54 (outros_termos -> empty .)
+    THEN            reduce using rule 54 (outros_termos -> empty .)
+    DO              reduce using rule 54 (outros_termos -> empty .)
+    RPAREN          reduce using rule 54 (outros_termos -> empty .)
+
+
+state 77
+
+    (55) op_ad -> PLUS .
+
+    MINUS           reduce using rule 55 (op_ad -> PLUS .)
+    IDENT           reduce using rule 55 (op_ad -> PLUS .)
+    NUM_INT         reduce using rule 55 (op_ad -> PLUS .)
+    NUM_REAL        reduce using rule 55 (op_ad -> PLUS .)
+    LPAREN          reduce using rule 55 (op_ad -> PLUS .)
+
+
+state 78
+
+    (56) op_ad -> MINUS .
+
+    MINUS           reduce using rule 56 (op_ad -> MINUS .)
+    IDENT           reduce using rule 56 (op_ad -> MINUS .)
+    NUM_INT         reduce using rule 56 (op_ad -> MINUS .)
+    NUM_REAL        reduce using rule 56 (op_ad -> MINUS .)
+    LPAREN          reduce using rule 56 (op_ad -> MINUS .)
+
+
+state 79
+
+    (57) termo -> op_un fator . mais_fatores
+    (60) mais_fatores -> . op_mul fator mais_fatores
+    (61) mais_fatores -> . empty
+    (62) op_mul -> . TIMES
+    (63) op_mul -> . DIVIDE
+    (68) empty -> .
+
+    TIMES           shift and go to state 104
+    DIVIDE          shift and go to state 105
+    PLUS            reduce using rule 68 (empty -> .)
+    MINUS           reduce using rule 68 (empty -> .)
+    EQ              reduce using rule 68 (empty -> .)
+    NEQ             reduce using rule 68 (empty -> .)
+    GTE             reduce using rule 68 (empty -> .)
+    LTE             reduce using rule 68 (empty -> .)
+    GT              reduce using rule 68 (empty -> .)
+    LT              reduce using rule 68 (empty -> .)
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+    THEN            reduce using rule 68 (empty -> .)
+    DO              reduce using rule 68 (empty -> .)
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    mais_fatores                   shift and go to state 101
+    op_mul                         shift and go to state 102
+    empty                          shift and go to state 103
+
+state 80
+
+    (64) fator -> IDENT .
+
+    TIMES           reduce using rule 64 (fator -> IDENT .)
+    DIVIDE          reduce using rule 64 (fator -> IDENT .)
+    PLUS            reduce using rule 64 (fator -> IDENT .)
+    MINUS           reduce using rule 64 (fator -> IDENT .)
+    EQ              reduce using rule 64 (fator -> IDENT .)
+    NEQ             reduce using rule 64 (fator -> IDENT .)
+    GTE             reduce using rule 64 (fator -> IDENT .)
+    LTE             reduce using rule 64 (fator -> IDENT .)
+    GT              reduce using rule 64 (fator -> IDENT .)
+    LT              reduce using rule 64 (fator -> IDENT .)
+    SEMICOLON       reduce using rule 64 (fator -> IDENT .)
+    READ            reduce using rule 64 (fator -> IDENT .)
+    WRITE           reduce using rule 64 (fator -> IDENT .)
+    IDENT           reduce using rule 64 (fator -> IDENT .)
+    IF              reduce using rule 64 (fator -> IDENT .)
+    WHILE           reduce using rule 64 (fator -> IDENT .)
+    END             reduce using rule 64 (fator -> IDENT .)
+    ELSE            reduce using rule 64 (fator -> IDENT .)
+    DOLLAR          reduce using rule 64 (fator -> IDENT .)
+    THEN            reduce using rule 64 (fator -> IDENT .)
+    DO              reduce using rule 64 (fator -> IDENT .)
+    RPAREN          reduce using rule 64 (fator -> IDENT .)
+
+
+state 81
+
+    (65) fator -> NUM_INT .
+
+    TIMES           reduce using rule 65 (fator -> NUM_INT .)
+    DIVIDE          reduce using rule 65 (fator -> NUM_INT .)
+    PLUS            reduce using rule 65 (fator -> NUM_INT .)
+    MINUS           reduce using rule 65 (fator -> NUM_INT .)
+    EQ              reduce using rule 65 (fator -> NUM_INT .)
+    NEQ             reduce using rule 65 (fator -> NUM_INT .)
+    GTE             reduce using rule 65 (fator -> NUM_INT .)
+    LTE             reduce using rule 65 (fator -> NUM_INT .)
+    GT              reduce using rule 65 (fator -> NUM_INT .)
+    LT              reduce using rule 65 (fator -> NUM_INT .)
+    SEMICOLON       reduce using rule 65 (fator -> NUM_INT .)
+    READ            reduce using rule 65 (fator -> NUM_INT .)
+    WRITE           reduce using rule 65 (fator -> NUM_INT .)
+    IDENT           reduce using rule 65 (fator -> NUM_INT .)
+    IF              reduce using rule 65 (fator -> NUM_INT .)
+    WHILE           reduce using rule 65 (fator -> NUM_INT .)
+    END             reduce using rule 65 (fator -> NUM_INT .)
+    ELSE            reduce using rule 65 (fator -> NUM_INT .)
+    DOLLAR          reduce using rule 65 (fator -> NUM_INT .)
+    THEN            reduce using rule 65 (fator -> NUM_INT .)
+    DO              reduce using rule 65 (fator -> NUM_INT .)
+    RPAREN          reduce using rule 65 (fator -> NUM_INT .)
+
+
+state 82
+
+    (66) fator -> NUM_REAL .
+
+    TIMES           reduce using rule 66 (fator -> NUM_REAL .)
+    DIVIDE          reduce using rule 66 (fator -> NUM_REAL .)
+    PLUS            reduce using rule 66 (fator -> NUM_REAL .)
+    MINUS           reduce using rule 66 (fator -> NUM_REAL .)
+    EQ              reduce using rule 66 (fator -> NUM_REAL .)
+    NEQ             reduce using rule 66 (fator -> NUM_REAL .)
+    GTE             reduce using rule 66 (fator -> NUM_REAL .)
+    LTE             reduce using rule 66 (fator -> NUM_REAL .)
+    GT              reduce using rule 66 (fator -> NUM_REAL .)
+    LT              reduce using rule 66 (fator -> NUM_REAL .)
+    SEMICOLON       reduce using rule 66 (fator -> NUM_REAL .)
+    READ            reduce using rule 66 (fator -> NUM_REAL .)
+    WRITE           reduce using rule 66 (fator -> NUM_REAL .)
+    IDENT           reduce using rule 66 (fator -> NUM_REAL .)
+    IF              reduce using rule 66 (fator -> NUM_REAL .)
+    WHILE           reduce using rule 66 (fator -> NUM_REAL .)
+    END             reduce using rule 66 (fator -> NUM_REAL .)
+    ELSE            reduce using rule 66 (fator -> NUM_REAL .)
+    DOLLAR          reduce using rule 66 (fator -> NUM_REAL .)
+    THEN            reduce using rule 66 (fator -> NUM_REAL .)
+    DO              reduce using rule 66 (fator -> NUM_REAL .)
+    RPAREN          reduce using rule 66 (fator -> NUM_REAL .)
+
+
+state 83
+
+    (67) fator -> LPAREN . expressao RPAREN
+    (52) expressao -> . termo outros_termos
+    (57) termo -> . op_un fator mais_fatores
+    (58) op_un -> . MINUS
+    (59) op_un -> . empty
+    (68) empty -> .
+
+    MINUS           shift and go to state 48
+    IDENT           reduce using rule 68 (empty -> .)
+    NUM_INT         reduce using rule 68 (empty -> .)
+    NUM_REAL        reduce using rule 68 (empty -> .)
+    LPAREN          reduce using rule 68 (empty -> .)
+
+    expressao                      shift and go to state 106
+    termo                          shift and go to state 46
+    op_un                          shift and go to state 47
+    empty                          shift and go to state 49
+
+state 84
+
+    (39) comando -> WHILE condicao DO . comandos DOLLAR
+    (27) comandos -> . comando mais_comandos
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comandos                       shift and go to state 107
+    comando                        shift and go to state 21
+
+state 85
+
+    (16) dc_p -> PROCEDURE IDENT inicio_escopo parameters corpo_p . fim_escopo
+    (15) fim_escopo -> . empty
+    (68) empty -> .
+
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    fim_escopo                     shift and go to state 108
+    empty                          shift and go to state 109
+
+state 86
+
+    (22) corpo_p -> dc_loc . BEGIN comandos END
+
+    BEGIN           shift and go to state 110
+
+
+state 87
+
+    (23) dc_loc -> dc_v . mais_dcloc
+    (25) mais_dcloc -> . SEMICOLON dc_v mais_dcloc
+    (26) mais_dcloc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 112
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    mais_dcloc                     shift and go to state 111
+    empty                          shift and go to state 113
+
+state 88
+
+    (24) dc_loc -> empty .
+
+    BEGIN           reduce using rule 24 (dc_loc -> empty .)
+
+
+state 89
+
+    (17) parameters -> LPAREN lista_par . RPAREN
+
+    RPAREN          shift and go to state 114
+
+
+state 90
+
+    (19) lista_par -> variaveis . COLON tipo_var mais_par
+
+    COLON           shift and go to state 115
+
+
+state 91
+
+    (32) comando -> READ LPAREN IDENT RPAREN . pt_virgula_opc
+    (30) pt_virgula_opc -> . SEMICOLON
+    (31) pt_virgula_opc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 61
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    pt_virgula_opc                 shift and go to state 116
+    empty                          shift and go to state 62
+
+state 92
+
+    (34) comando -> IDENT ASSIGN expressao pt_virgula_opc .
+
+    READ            reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    WRITE           reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    IDENT           reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    IF              reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    WHILE           reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    END             reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    ELSE            reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+    DOLLAR          reduce using rule 34 (comando -> IDENT ASSIGN expressao pt_virgula_opc .)
+
+
+state 93
+
+    (41) lista_arg -> LPAREN argumentos RPAREN .
+
+    SEMICOLON       reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    READ            reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    WRITE           reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    IDENT           reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    IF              reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    WHILE           reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    END             reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    ELSE            reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+    DOLLAR          reduce using rule 41 (lista_arg -> LPAREN argumentos RPAREN .)
+
+
+state 94
+
+    (43) argumentos -> IDENT mais_ident .
+
+    RPAREN          reduce using rule 43 (argumentos -> IDENT mais_ident .)
+
+
+state 95
+
+    (44) mais_ident -> COMMA . argumentos
+    (43) argumentos -> . IDENT mais_ident
+
+    IDENT           shift and go to state 64
+
+    argumentos                     shift and go to state 117
+
+state 96
+
+    (45) mais_ident -> empty .
+
+    RPAREN          reduce using rule 45 (mais_ident -> empty .)
+
+
+state 97
+
+    (33) comando -> WRITE LPAREN IDENT RPAREN . pt_virgula_opc
+    (30) pt_virgula_opc -> . SEMICOLON
+    (31) pt_virgula_opc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 61
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    pt_virgula_opc                 shift and go to state 118
+    empty                          shift and go to state 62
+
+state 98
+
+    (35) comando -> IF condicao THEN comandos . pfalsa DOLLAR
+    (37) pfalsa -> . ELSE comandos
+    (38) pfalsa -> . empty
+    (68) empty -> .
+
+    ELSE            shift and go to state 120
+    DOLLAR          reduce using rule 68 (empty -> .)
+
+    pfalsa                         shift and go to state 119
+    empty                          shift and go to state 121
+
+state 99
+
+    (36) condicao -> expressao relacao expressao .
+
+    THEN            reduce using rule 36 (condicao -> expressao relacao expressao .)
+    DO              reduce using rule 36 (condicao -> expressao relacao expressao .)
+
+
+state 100
+
+    (53) outros_termos -> op_ad termo . outros_termos
+    (53) outros_termos -> . op_ad termo outros_termos
+    (54) outros_termos -> . empty
+    (55) op_ad -> . PLUS
+    (56) op_ad -> . MINUS
+    (68) empty -> .
+
+    PLUS            shift and go to state 77
+    MINUS           shift and go to state 78
+    EQ              reduce using rule 68 (empty -> .)
+    NEQ             reduce using rule 68 (empty -> .)
+    GTE             reduce using rule 68 (empty -> .)
+    LTE             reduce using rule 68 (empty -> .)
+    GT              reduce using rule 68 (empty -> .)
+    LT              reduce using rule 68 (empty -> .)
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+    THEN            reduce using rule 68 (empty -> .)
+    DO              reduce using rule 68 (empty -> .)
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    op_ad                          shift and go to state 75
+    outros_termos                  shift and go to state 122
+    empty                          shift and go to state 76
+
+state 101
+
+    (57) termo -> op_un fator mais_fatores .
+
+    PLUS            reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    MINUS           reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    EQ              reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    NEQ             reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    GTE             reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    LTE             reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    GT              reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    LT              reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    SEMICOLON       reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    READ            reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    WRITE           reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    IDENT           reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    IF              reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    WHILE           reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    END             reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    ELSE            reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    DOLLAR          reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    THEN            reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    DO              reduce using rule 57 (termo -> op_un fator mais_fatores .)
+    RPAREN          reduce using rule 57 (termo -> op_un fator mais_fatores .)
+
+
+state 102
+
+    (60) mais_fatores -> op_mul . fator mais_fatores
+    (64) fator -> . IDENT
+    (65) fator -> . NUM_INT
+    (66) fator -> . NUM_REAL
+    (67) fator -> . LPAREN expressao RPAREN
+
+    IDENT           shift and go to state 80
+    NUM_INT         shift and go to state 81
+    NUM_REAL        shift and go to state 82
+    LPAREN          shift and go to state 83
+
+    fator                          shift and go to state 123
+
+state 103
+
+    (61) mais_fatores -> empty .
+
+    PLUS            reduce using rule 61 (mais_fatores -> empty .)
+    MINUS           reduce using rule 61 (mais_fatores -> empty .)
+    EQ              reduce using rule 61 (mais_fatores -> empty .)
+    NEQ             reduce using rule 61 (mais_fatores -> empty .)
+    GTE             reduce using rule 61 (mais_fatores -> empty .)
+    LTE             reduce using rule 61 (mais_fatores -> empty .)
+    GT              reduce using rule 61 (mais_fatores -> empty .)
+    LT              reduce using rule 61 (mais_fatores -> empty .)
+    SEMICOLON       reduce using rule 61 (mais_fatores -> empty .)
+    READ            reduce using rule 61 (mais_fatores -> empty .)
+    WRITE           reduce using rule 61 (mais_fatores -> empty .)
+    IDENT           reduce using rule 61 (mais_fatores -> empty .)
+    IF              reduce using rule 61 (mais_fatores -> empty .)
+    WHILE           reduce using rule 61 (mais_fatores -> empty .)
+    END             reduce using rule 61 (mais_fatores -> empty .)
+    ELSE            reduce using rule 61 (mais_fatores -> empty .)
+    DOLLAR          reduce using rule 61 (mais_fatores -> empty .)
+    THEN            reduce using rule 61 (mais_fatores -> empty .)
+    DO              reduce using rule 61 (mais_fatores -> empty .)
+    RPAREN          reduce using rule 61 (mais_fatores -> empty .)
+
+
+state 104
+
+    (62) op_mul -> TIMES .
+
+    IDENT           reduce using rule 62 (op_mul -> TIMES .)
+    NUM_INT         reduce using rule 62 (op_mul -> TIMES .)
+    NUM_REAL        reduce using rule 62 (op_mul -> TIMES .)
+    LPAREN          reduce using rule 62 (op_mul -> TIMES .)
+
+
+state 105
+
+    (63) op_mul -> DIVIDE .
+
+    IDENT           reduce using rule 63 (op_mul -> DIVIDE .)
+    NUM_INT         reduce using rule 63 (op_mul -> DIVIDE .)
+    NUM_REAL        reduce using rule 63 (op_mul -> DIVIDE .)
+    LPAREN          reduce using rule 63 (op_mul -> DIVIDE .)
+
+
+state 106
+
+    (67) fator -> LPAREN expressao . RPAREN
+
+    RPAREN          shift and go to state 124
+
+
+state 107
+
+    (39) comando -> WHILE condicao DO comandos . DOLLAR
+
+    DOLLAR          shift and go to state 125
+
+
+state 108
+
+    (16) dc_p -> PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo .
+
+    SEMICOLON       reduce using rule 16 (dc_p -> PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo .)
+    BEGIN           reduce using rule 16 (dc_p -> PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo .)
+
+
+state 109
+
+    (15) fim_escopo -> empty .
+
+    SEMICOLON       reduce using rule 15 (fim_escopo -> empty .)
+    BEGIN           reduce using rule 15 (fim_escopo -> empty .)
+
+
+state 110
+
+    (22) corpo_p -> dc_loc BEGIN . comandos END
+    (27) comandos -> . comando mais_comandos
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comandos                       shift and go to state 126
+    comando                        shift and go to state 21
+
+state 111
+
+    (23) dc_loc -> dc_v mais_dcloc .
+
+    BEGIN           reduce using rule 23 (dc_loc -> dc_v mais_dcloc .)
+
+
+state 112
+
+    (25) mais_dcloc -> SEMICOLON . dc_v mais_dcloc
+    (8) dc_v -> . VAR variaveis COLON tipo_var
+
+    VAR             shift and go to state 9
+
+    dc_v                           shift and go to state 127
+
+state 113
+
+    (26) mais_dcloc -> empty .
+
+    BEGIN           reduce using rule 26 (mais_dcloc -> empty .)
+
+
+state 114
+
+    (17) parameters -> LPAREN lista_par RPAREN .
+
+    VAR             reduce using rule 17 (parameters -> LPAREN lista_par RPAREN .)
+    BEGIN           reduce using rule 17 (parameters -> LPAREN lista_par RPAREN .)
+
+
+state 115
+
+    (19) lista_par -> variaveis COLON . tipo_var mais_par
+    (9) tipo_var -> . REAL
+    (10) tipo_var -> . INTEGER
+
+    REAL            shift and go to state 52
+    INTEGER         shift and go to state 53
+
+    tipo_var                       shift and go to state 128
+
+state 116
+
+    (32) comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .
+
+    READ            reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    WRITE           reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    IDENT           reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    IF              reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    WHILE           reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    END             reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    ELSE            reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+    DOLLAR          reduce using rule 32 (comando -> READ LPAREN IDENT RPAREN pt_virgula_opc .)
+
+
+state 117
+
+    (44) mais_ident -> COMMA argumentos .
+
+    RPAREN          reduce using rule 44 (mais_ident -> COMMA argumentos .)
+
+
+state 118
+
+    (33) comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .
+
+    READ            reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    WRITE           reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    IDENT           reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    IF              reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    WHILE           reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    END             reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    ELSE            reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+    DOLLAR          reduce using rule 33 (comando -> WRITE LPAREN IDENT RPAREN pt_virgula_opc .)
+
+
+state 119
+
+    (35) comando -> IF condicao THEN comandos pfalsa . DOLLAR
+
+    DOLLAR          shift and go to state 129
+
+
+state 120
+
+    (37) pfalsa -> ELSE . comandos
+    (27) comandos -> . comando mais_comandos
+    (32) comando -> . READ LPAREN IDENT RPAREN pt_virgula_opc
+    (33) comando -> . WRITE LPAREN IDENT RPAREN pt_virgula_opc
+    (34) comando -> . IDENT ASSIGN expressao pt_virgula_opc
+    (35) comando -> . IF condicao THEN comandos pfalsa DOLLAR
+    (39) comando -> . WHILE condicao DO comandos DOLLAR
+    (40) comando -> . IDENT lista_arg pt_virgula_opc
+
+    READ            shift and go to state 22
+    WRITE           shift and go to state 24
+    IDENT           shift and go to state 23
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+
+    comandos                       shift and go to state 130
+    comando                        shift and go to state 21
+
+state 121
+
+    (38) pfalsa -> empty .
+
+    DOLLAR          reduce using rule 38 (pfalsa -> empty .)
+
+
+state 122
+
+    (53) outros_termos -> op_ad termo outros_termos .
+
+    EQ              reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    NEQ             reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    GTE             reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    LTE             reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    GT              reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    LT              reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    SEMICOLON       reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    READ            reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    WRITE           reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    IDENT           reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    IF              reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    WHILE           reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    END             reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    ELSE            reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    DOLLAR          reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    THEN            reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    DO              reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+    RPAREN          reduce using rule 53 (outros_termos -> op_ad termo outros_termos .)
+
+
+state 123
+
+    (60) mais_fatores -> op_mul fator . mais_fatores
+    (60) mais_fatores -> . op_mul fator mais_fatores
+    (61) mais_fatores -> . empty
+    (62) op_mul -> . TIMES
+    (63) op_mul -> . DIVIDE
+    (68) empty -> .
+
+    TIMES           shift and go to state 104
+    DIVIDE          shift and go to state 105
+    PLUS            reduce using rule 68 (empty -> .)
+    MINUS           reduce using rule 68 (empty -> .)
+    EQ              reduce using rule 68 (empty -> .)
+    NEQ             reduce using rule 68 (empty -> .)
+    GTE             reduce using rule 68 (empty -> .)
+    LTE             reduce using rule 68 (empty -> .)
+    GT              reduce using rule 68 (empty -> .)
+    LT              reduce using rule 68 (empty -> .)
+    SEMICOLON       reduce using rule 68 (empty -> .)
+    READ            reduce using rule 68 (empty -> .)
+    WRITE           reduce using rule 68 (empty -> .)
+    IDENT           reduce using rule 68 (empty -> .)
+    IF              reduce using rule 68 (empty -> .)
+    WHILE           reduce using rule 68 (empty -> .)
+    END             reduce using rule 68 (empty -> .)
+    ELSE            reduce using rule 68 (empty -> .)
+    DOLLAR          reduce using rule 68 (empty -> .)
+    THEN            reduce using rule 68 (empty -> .)
+    DO              reduce using rule 68 (empty -> .)
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    op_mul                         shift and go to state 102
+    mais_fatores                   shift and go to state 131
+    empty                          shift and go to state 103
+
+state 124
+
+    (67) fator -> LPAREN expressao RPAREN .
+
+    TIMES           reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    DIVIDE          reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    PLUS            reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    MINUS           reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    EQ              reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    NEQ             reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    GTE             reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    LTE             reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    GT              reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    LT              reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    SEMICOLON       reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    READ            reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    WRITE           reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    IDENT           reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    IF              reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    WHILE           reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    END             reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    ELSE            reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    DOLLAR          reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    THEN            reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    DO              reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+    RPAREN          reduce using rule 67 (fator -> LPAREN expressao RPAREN .)
+
+
+state 125
+
+    (39) comando -> WHILE condicao DO comandos DOLLAR .
+
+    READ            reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    WRITE           reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    IDENT           reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    IF              reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    WHILE           reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    END             reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    ELSE            reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+    DOLLAR          reduce using rule 39 (comando -> WHILE condicao DO comandos DOLLAR .)
+
+
+state 126
+
+    (22) corpo_p -> dc_loc BEGIN comandos . END
+
+    END             shift and go to state 132
+
+
+state 127
+
+    (25) mais_dcloc -> SEMICOLON dc_v . mais_dcloc
+    (25) mais_dcloc -> . SEMICOLON dc_v mais_dcloc
+    (26) mais_dcloc -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 112
+    BEGIN           reduce using rule 68 (empty -> .)
+
+    mais_dcloc                     shift and go to state 133
+    empty                          shift and go to state 113
+
+state 128
+
+    (19) lista_par -> variaveis COLON tipo_var . mais_par
+    (20) mais_par -> . SEMICOLON lista_par
+    (21) mais_par -> . empty
+    (68) empty -> .
+
+    SEMICOLON       shift and go to state 135
+    RPAREN          reduce using rule 68 (empty -> .)
+
+    mais_par                       shift and go to state 134
+    empty                          shift and go to state 136
+
+state 129
+
+    (35) comando -> IF condicao THEN comandos pfalsa DOLLAR .
+
+    READ            reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    WRITE           reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    IDENT           reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    IF              reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    WHILE           reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    END             reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    ELSE            reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+    DOLLAR          reduce using rule 35 (comando -> IF condicao THEN comandos pfalsa DOLLAR .)
+
+
+state 130
+
+    (37) pfalsa -> ELSE comandos .
+
+    DOLLAR          reduce using rule 37 (pfalsa -> ELSE comandos .)
+
+
+state 131
+
+    (60) mais_fatores -> op_mul fator mais_fatores .
+
+    PLUS            reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    MINUS           reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    EQ              reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    NEQ             reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    GTE             reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    LTE             reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    GT              reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    LT              reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    SEMICOLON       reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    READ            reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    WRITE           reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    IDENT           reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    IF              reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    WHILE           reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    END             reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    ELSE            reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    DOLLAR          reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    THEN            reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    DO              reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+    RPAREN          reduce using rule 60 (mais_fatores -> op_mul fator mais_fatores .)
+
+
+state 132
+
+    (22) corpo_p -> dc_loc BEGIN comandos END .
+
+    SEMICOLON       reduce using rule 22 (corpo_p -> dc_loc BEGIN comandos END .)
+    BEGIN           reduce using rule 22 (corpo_p -> dc_loc BEGIN comandos END .)
+
+
+state 133
+
+    (25) mais_dcloc -> SEMICOLON dc_v mais_dcloc .
+
+    BEGIN           reduce using rule 25 (mais_dcloc -> SEMICOLON dc_v mais_dcloc .)
+
+
+state 134
+
+    (19) lista_par -> variaveis COLON tipo_var mais_par .
+
+    RPAREN          reduce using rule 19 (lista_par -> variaveis COLON tipo_var mais_par .)
+
+
+state 135
+
+    (20) mais_par -> SEMICOLON . lista_par
+    (19) lista_par -> . variaveis COLON tipo_var mais_par
+    (11) variaveis -> . IDENT mais_var
+
+    IDENT           shift and go to state 18
+
+    lista_par                      shift and go to state 137
+    variaveis                      shift and go to state 90
+
+state 136
+
+    (21) mais_par -> empty .
+
+    RPAREN          reduce using rule 21 (mais_par -> empty .)
+
+
+state 137
+
+    (20) mais_par -> SEMICOLON lista_par .
+
+    RPAREN          reduce using rule 20 (mais_par -> SEMICOLON lista_par .)
+
