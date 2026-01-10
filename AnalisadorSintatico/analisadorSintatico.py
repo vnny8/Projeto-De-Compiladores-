@@ -49,6 +49,9 @@ class GeradorCodigo:
         # Eu instancio o Analisador Semântico aqui dentro.
         # Isso permite que eu valide os tipos e escopos ANTES de gerar o código.
         self.semantico = AnalisadorSemantico()
+        
+        # Tabela de procedimentos: guarda nome -> {'endereco': int, 'num_params': int, 'params': [enderecos]}
+        self.tabela_procedimentos = {}
 
     def adicionar_instrucao(self, instrucao, argumento=None):
         """
@@ -279,40 +282,79 @@ def p_mais_var(p):
 def p_inicio_escopo(p):
     '''inicio_escopo : empty'''
     gerador.semantico.entrar_escopo()
+    # Gera pulo para não executar declaração do procedure
+    instrucao_pulo = gerador.adicionar_instrucao("DSVI", -1)
+    # Marca onde o procedimento começa (após o DSVI)
+    endereco_inicio_proc = len(gerador.codigo)
+    p[0] = {'pulo': instrucao_pulo, 'inicio': endereco_inicio_proc}
 
 def p_fim_escopo(p):
     '''fim_escopo : empty'''
     gerador.semantico.sair_escopo()
+    # Adiciona retorno
+    gerador.adicionar_instrucao("RTPR")
 
 def p_dc_p(p):
     # Regra Procedure: procedure nome (params) corpo
     # Usamos inicio_escopo e fim_escopo para delimitar variáveis locais
     '''dc_p : PROCEDURE IDENT inicio_escopo parameters corpo_p fim_escopo'''
-    pass
+    nome_proc = p[2]
+    info_escopo = p[3]
+    indice_pulo = info_escopo['pulo']
+    endereco_inicio = info_escopo['inicio']
+    enderecos_params = p[4] if p[4] else []
+    
+    # NÃO insere ARMZs no meio do código, isso quebra os saltos
+    # Em vez disso, guardo apenas a info e processo na chamada
+    
+    gerador.tabela_procedimentos[nome_proc] = {
+        'endereco': endereco_inicio,
+        'num_params': len(enderecos_params),
+        'params': enderecos_params
+    }
+    
+    # Corrige o salto para pular todo o corpo do procedimento
+    destino = len(gerador.codigo)
+    gerador.corrigir_salto(indice_pulo, destino)
 
 def p_parameters(p):
     '''parameters : LPAREN lista_par RPAREN
                   | empty'''
-    pass
+    if len(p) > 2:
+        # Retorna a lista de endereços dos parâmetros
+        p[0] = p[2] if p[2] else []
+    else:
+        p[0] = []
 
 def p_lista_par(p):
     '''lista_par : variaveis COLON tipo_var mais_par'''
     # Parâmetros de função
     lista_vars = p[1]
     tipo = p[3]
+    enderecos_params = []
     for var_nome in lista_vars:
         try:
-            gerador.semantico.adicionar_variavel(var_nome, tipo)
+            endereco = gerador.semantico.adicionar_variavel(var_nome, tipo)
             gerador.adicionar_instrucao("ALME", 1)
+            enderecos_params.append(endereco)
         except Exception as e:
             print(f"ERRO SEMÂNTICO (Parâmetros): {e}")
             sys.exit(1)
-    pass
+    
+    # Acumula com os parâmetros que vem depois (de mais_par)
+    if p[4]:
+        enderecos_params.extend(p[4])
+    
+    # Retorna TODOS os endereços dos parâmetros
+    p[0] = enderecos_params
 
 def p_mais_par(p):
     '''mais_par : SEMICOLON lista_par
                 | empty'''
-    pass
+    if len(p) > 2:
+        p[0] = p[2]  # Retorna os endereços dos próximos parâmetros
+    else:
+        p[0] = []
 
 def p_corpo_p(p):
     # CORREÇÃO AQUI: Removido 'SEMICOLON' do final.
@@ -329,7 +371,9 @@ def p_dc_loc(p):
     pass
 
 def p_mais_dcloc(p):
-    '''mais_dcloc : SEMICOLON dc_v mais_dcloc
+    # O SEMICOLON é separador. Se tem, espera mais uma declaração.
+    # Se não tem, empty.
+    '''mais_dcloc : SEMICOLON dc_loc
                   | empty'''
     pass
 # -----------------------------------------
@@ -345,12 +389,15 @@ def p_mais_comandos(p):
                      | empty'''
     pass
 
+# --- REGRA AUXILIAR PARA PONTO E VÍRGULA OPCIONAL ---
+# Necessária para comandos read/write/assign que podem ou não ter ;
 def p_pt_virgula_opc(p):
     '''pt_virgula_opc : SEMICOLON
                       | empty'''
     pass
 
 def p_comando_read(p):
+    # Aceita ; opcional no final
     '''comando : READ LPAREN IDENT RPAREN pt_virgula_opc'''
     # Comando READ (Leitura)
     gerador.adicionar_instrucao("LEIT") # Gera instrução de ler input
@@ -364,6 +411,7 @@ def p_comando_read(p):
         sys.exit(1)
 
 def p_comando_write(p):
+    # Aceita ; opcional no final
     '''comando : WRITE LPAREN IDENT RPAREN pt_virgula_opc'''
     # Comando WRITE (Escrita)
     try:
@@ -378,6 +426,7 @@ def p_comando_write(p):
         sys.exit(1)
 
 def p_comando_assign(p):
+    # Aceita ; opcional no final
     '''comando : IDENT ASSIGN expressao pt_virgula_opc'''
     # Comando de Atribuição (Ex: x := 10)
     try:
@@ -396,45 +445,69 @@ def p_comando_assign(p):
 def p_comando_if(p):
     '''comando : IF condicao THEN comandos pfalsa DOLLAR'''
     # BACKPATCHING DO IF
-    # Quando executei 'condicao', gerei um DSVF (Desvio se Falso) incompleto.
     indice_dsvf = p[2]
+    resultado_pfalsa = p[5]
     
-    # Agora eu sei onde o bloco THEN termina (é a linha atual).
     destino_final = len(gerador.codigo)
     
-    if p[5] is not None:
-        # Caso com ELSE: O salto do IF deve ir para o ELSE.
-        # E o ELSE deve ter gerado um salto para o fim.
-        # Simplificação: Corrijo o salto do ELSE para vir para cá (fim).
-        indice_dsvi_then = p[5]
-        gerador.corrigir_salto(indice_dsvi_then, destino_final)
+    if resultado_pfalsa:
+        # Tem ELSE: resultado_pfalsa é uma tupla (indice_dsvi, inicio_else)
+        indice_dsvi, inicio_else = resultado_pfalsa
+        # DSVF pula para o início do ELSE
+        gerador.corrigir_salto(indice_dsvf, inicio_else)
+        # DSVI do fim do THEN pula para o fim
+        gerador.corrigir_salto(indice_dsvi, destino_final)
     else:
-        # Caso sem ELSE: O salto do IF vem direto para cá (fim).
+        # Sem ELSE: DSVF pula direto para o fim
         gerador.corrigir_salto(indice_dsvf, destino_final)
 
 def p_condicao(p):
     '''condicao : expressao relacao expressao'''
-    # Comparação: Exp1 OP Exp2
-    # A regra 'relacao' já gerou a instrução de comparação (ex: CMEN).
-    # Se for falso, eu tenho que pular o bloco THEN.
-    # Como não sei o tamanho do bloco ainda, gero um DSVF com placeholder (-1).
+    # CORREÇÃO: A relacao (p[2]) agora retorna a string do operador (ex: '>=')
+    # O código da expressão 1 e 2 já foi gerado antes de chegarmos aqui.
+    # Agora geramos a comparação com base no operador.
+    op = p[2]
+    if op == '=': gerador.adicionar_instrucao("CPIG")
+    elif op == '<>': gerador.adicionar_instrucao("CDIF")
+    elif op == '>=': gerador.adicionar_instrucao("CPMA") # Maior Igual
+    elif op == '<=': gerador.adicionar_instrucao("CPMI") # Menor Igual
+    elif op == '>': gerador.adicionar_instrucao("CMAI")
+    elif op == '<': gerador.adicionar_instrucao("CMEN")
+    
     instrucao_salto = gerador.adicionar_instrucao("DSVF", -1)
-    # Retorno o índice desse salto para a regra 'comando_if' corrigir depois.
     p[0] = instrucao_salto
 
 def p_pfalsa(p):
-    '''pfalsa : ELSE comandos
+    '''pfalsa : marca_else ELSE comandos
               | empty'''
-    # Regra auxiliar para o ELSE
     if len(p) > 2:
-        p[0] = None 
+        # Retorna (índice do DSVI, início do ELSE)
+        indice_dsvi = p[1]
+        inicio_else = indice_dsvi + 1
+        p[0] = (indice_dsvi, inicio_else)
     else:
         p[0] = None
+
+def p_marca_else(p):
+    '''marca_else : empty'''
+    # Gera DSVI para o THEN pular o ELSE
+    indice = gerador.adicionar_instrucao("DSVI", -1)
+    p[0] = indice
 
 def p_comando_while(p):
     '''comando : WHILE condicao DO comandos DOLLAR'''
     # BACKPATCHING DO WHILE
-    indice_dsvf = p[2] # Pego o índice do salto gerado na condição
+    # p[2] é o índice do DSVF gerado pela condição
+    indice_dsvf = p[2]
+    
+    # Precisamos voltar para o INÍCIO da avaliação da condição,
+    # antes dos CRVLs que carregam os operandos.
+    # A condição gera: CRVL CRVL comparação DSVF
+    # Então o início é 3 instruções antes do DSVF
+    inicio_while = indice_dsvf - 3
+    
+    # Gero um salto incondicional de volta ao início do WHILE
+    gerador.adicionar_instrucao("DSVI", inicio_while)
     
     # O destino da saída é a linha atual (fim do loop)
     destino_saida = len(gerador.codigo)
@@ -444,24 +517,68 @@ def p_comando_while(p):
 
 # --- Regras de Suporte (Chamadas de Procedimentos) ---
 def p_comando_chamada(p):
+    # Aceita ; opcional no final
     '''comando : IDENT lista_arg pt_virgula_opc'''
-    pass
+    nome_proc = p[1]
+    argumentos = p[2] if p[2] else []
+    
+    # Verifica se o procedimento foi declarado
+    if nome_proc not in gerador.tabela_procedimentos:
+        print(f"ERRO SEMÂNTICO: Procedimento '{nome_proc}' não foi declarado.")
+        return
+    
+    info_proc = gerador.tabela_procedimentos[nome_proc]
+    endereco_proc = info_proc['endereco']
+    num_params = info_proc['num_params']
+    enderecos_params = info_proc['params']
+    
+    # Verifica se o número de argumentos está correto
+    if len(argumentos) != num_params:
+        print(f"ERRO SEMÂNTICO: Procedimento '{nome_proc}' espera {num_params} argumentos, mas recebeu {len(argumentos)}.")
+        return
+    
+    # Para cada argumento, empilha seu valor
+    for arg_nome in argumentos:
+        try:
+            endereco_arg = gerador.semantico.verificar_declaracao(arg_nome)
+            gerador.adicionar_instrucao("CRVL", endereco_arg)
+        except Exception as e:
+            print(f"ERRO SEMÂNTICO: {e}")
+            return
+    
+    # Para cada parâmetro, gera ARMZ antes da chamada
+    # Desempilha na ordem reversa (o último empilhado é o primeiro a desempilhar)
+    for i in range(len(enderecos_params) - 1, -1, -1):
+        gerador.adicionar_instrucao("ARMZ", enderecos_params[i])
+    
+    # Gera chamada ao procedimento
+    gerador.adicionar_instrucao("CHPR", endereco_proc)
 
 def p_lista_arg(p):
     '''lista_arg : LPAREN argumentos RPAREN
                  | empty'''
-    pass
+    if len(p) > 2:
+        p[0] = p[2] if p[2] else []
+    else:
+        p[0] = []
 
 def p_argumentos(p):
     '''argumentos : IDENT mais_ident'''
-    pass
+    # Retorna lista de nomes dos argumentos
+    lista = [p[1]]
+    if p[2]:
+        lista.extend(p[2])
+    p[0] = lista
 
 def p_mais_ident(p):
     '''mais_ident : COMMA argumentos
                   | empty'''
-    pass
+    if len(p) > 2:
+        p[0] = p[2]  # Continua a lista
+    else:
+        p[0] = []
 
-# --- Regras Matemáticas e Lógicas ---
+# --- Regras Matemáticas e Lógicas (CORRIGIDO PARA GERAÇÃO PÓS-FIXADA) ---
 
 def p_relacao(p):
     '''relacao : EQ
@@ -470,13 +587,9 @@ def p_relacao(p):
                | LTE
                | GT
                | LT'''
-    # Mapeio os operadores do código fonte para instruções da VM
-    if p[1] == '=': gerador.adicionar_instrucao("CPIG")  # Compara Igual
-    elif p[1] == '<>': gerador.adicionar_instrucao("CDIF") # Compara Diferente
-    elif p[1] == '>=': gerador.adicionar_instrucao("CMAI") # Compara Maior/Igual (Aprox)
-    elif p[1] == '<=': gerador.adicionar_instrucao("CMEN") # Compara Menor/Igual
-    elif p[1] == '>': gerador.adicionar_instrucao("CMAI")  # Compara Maior
-    elif p[1] == '<': gerador.adicionar_instrucao("CMEN")  # Compara Menor
+    # Mapeio os operadores do código fonte e APENAS RETORNO O SÍMBOLO.
+    # Não gero código aqui, pois a segunda expressão ainda não foi processada.
+    p[0] = p[1]
 
 def p_expressao(p):
     '''expressao : termo outros_termos'''
@@ -485,14 +598,19 @@ def p_expressao(p):
 def p_outros_termos(p):
     '''outros_termos : op_ad termo outros_termos
                      | empty'''
-    pass
+    # GERAÇÃO DE CÓDIGO AQUI:
+    # A estrutura é: expressao -> termo (já empilhado) outros_termos
+    # outros_termos -> op (p[1]) termo (p[2] - já empilhado) ...
+    # Assim que p[2] termina, o segundo operando está na pilha. Hora de gerar a instrução!
+    if len(p) > 2:
+        if p[1] == '+': gerador.adicionar_instrucao("SOMA")
+        elif p[1] == '-': gerador.adicionar_instrucao("SUBT")
 
 def p_op_ad(p):
     '''op_ad : PLUS
              | MINUS'''
-    # Operações de Soma e Subtração
-    if p[1] == '+': gerador.adicionar_instrucao("SOMA")
-    elif p[1] == '-': gerador.adicionar_instrucao("SUBT")
+    # Apenas retorna o operador
+    p[0] = p[1]
 
 def p_termo(p):
     '''termo : op_un fator mais_fatores'''
@@ -506,14 +624,18 @@ def p_op_un(p):
 def p_mais_fatores(p):
     '''mais_fatores : op_mul fator mais_fatores
                     | empty'''
-    pass
+    # GERAÇÃO DE CÓDIGO AQUI:
+    # Mesmo raciocínio: termo -> fator (já empilhado) mais_fatores
+    # mais_fatores -> op (p[1]) fator (p[2] - já empilhado) ...
+    if len(p) > 2:
+        if p[1] == '*': gerador.adicionar_instrucao("MULT")
+        elif p[1] == '/': gerador.adicionar_instrucao("DIVI")
 
 def p_op_mul(p):
     '''op_mul : TIMES
               | DIVIDE'''
-    # Operações de Multiplicação e Divisão
-    if p[1] == '*': gerador.adicionar_instrucao("MULT")
-    elif p[1] == '/': gerador.adicionar_instrucao("DIVI")
+    # Apenas retorna o operador
+    p[0] = p[1]
 
 def p_fator_id(p):
     '''fator : IDENT'''

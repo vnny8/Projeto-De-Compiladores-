@@ -9,9 +9,13 @@ sys.path.append(diretorio_raiz)
 try:
     # Assumindo que o arquivo se chama 'analisadorSintatico.py' dentro da pasta 'AnalisadorSintatico'
     from AnalisadorSintatico import analisadorSintatico
+    from CodigoObjeto import executor # Novo import da Parte 2
 except ImportError as e:
     print(f"ERRO DE IMPORTAÇÃO: {e}")
-    print("Verifique se o arquivo 'analisadorSintatico.py' está dentro da pasta 'AnalisadorSintatico'.")
+    print("Verifique se as pastas 'AnalisadorSintatico' e 'CodigoObjeto' existem e contêm os arquivos '__init__.py' (opcional) e os scripts corretos.")
+    # Ajuda visual para debugging
+    print(f"Diretório Raiz detetado: {diretorio_raiz}")
+    print(f"Conteúdo do PATH: {sys.path}")
     sys.exit(1)
 
 def ler_codigo():
@@ -67,6 +71,21 @@ def main():
     except Exception as e:
         print(f"   [ERRO] Falha durante a compilação: {e}")
         sys.exit(1)
+
+    # --- PARTE 2: EXECUÇÃO ---
+    print("==============================================")
+    print(">>> Iniciando Parte 2: Execução da Máquina Virtual")
+    print("==============================================")
+    
+    try:
+        vm = executor.MaquinaVirtual()
+        # O executor já sabe onde buscar o arquivo gerado (na pasta Dados)
+        # Passamos o caminho completo para garantir
+        caminho_obj_completo = os.path.join(diretorio_raiz, 'Dados', 'codigo_objeto.txt')
+        vm.carregar(caminho_obj_completo)
+        vm.executar()
+    except Exception as e:
+        print(f"   [ERRO CRÍTICO NA EXECUÇÃO]: {e}")
 
     print("==============================================")
     print("      COMPILAÇÃO CONCLUÍDA COM SUCESSO!       ")
