@@ -212,11 +212,24 @@ class MaquinaVirtual:
                 self.pc += 1
             
             # --- Comandos Extras (Opcional/Simplificado) ---
+            elif op == 'PUSHER': # Empilha endereço de retorno
+                endereco_retorno = int(arg)
+                self.pilha_retorno.append(endereco_retorno)
+                self.pc += 1
+                
+            elif op == 'PARAM': # Empilha parâmetro (valor de memória)
+                endereco = int(arg)
+                if endereco < len(self.dados):
+                    self.pilha.append(self.dados[endereco])
+                else:
+                    while len(self.dados) <= endereco:
+                        self.dados.append(0)
+                    self.pilha.append(self.dados[endereco])
+                self.pc += 1
+            
             elif op == 'CHPR': # Chamar Procedimento
                 endereco_proc = int(arg)
-                # Salva o endereço de retorno (próxima instrução)
-                self.pilha_retorno.append(self.pc + 1)
-                # Salta para o início do procedimento
+                # O procedimento vai desempilhar parâmetros e processar
                 self.pc = endereco_proc
                 
             elif op == 'RTPR': # Return Procedure
@@ -227,11 +240,12 @@ class MaquinaVirtual:
                     # Se não houver endereço de retorno, é o fim do programa
                     self.pc += 1
                     
-            elif op == 'DESM': # Desalocar/Desempilhar da pilha
+            elif op == 'DESM': # Desalocar memória
                 qtd = int(arg) if arg else 1
+                # Desaloca da área de dados (remove últimas n variáveis)
                 for _ in range(qtd):
-                    if self.pilha:
-                        self.pilha.pop()
+                    if self.dados:
+                        self.dados.pop()
                 self.pc += 1
             
             else:

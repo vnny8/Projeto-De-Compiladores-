@@ -52,6 +52,9 @@ class GeradorCodigo:
         
         # Tabela de procedimentos: guarda nome -> {'endereco': int, 'num_params': int, 'params': [enderecos]}
         self.tabela_procedimentos = {}
+        
+        # Pilha para rastrear quantidade de variáveis alocadas por escopo (para DESM)
+        self.variaveis_por_escopo = []
 
     def adicionar_instrucao(self, instrucao, argumento=None):
         """
@@ -255,6 +258,10 @@ def p_dc_v(p):
             
             # Passo 2: Se ok, aloco espaço na memória (Geração de Código)
             gerador.adicionar_instrucao("ALME", 1)
+            
+            # Se estivermos dentro de um procedimento, incrementa contador
+            if gerador.variaveis_por_escopo:
+                gerador.variaveis_por_escopo[-1] += 1
         except Exception as e:
             print(f"ERRO SEMÂNTICO na linha {p.lineno(1)}: {e}")
             sys.exit(1) # Interrompo a compilação
@@ -282,6 +289,8 @@ def p_mais_var(p):
 def p_inicio_escopo(p):
     '''inicio_escopo : empty'''
     gerador.semantico.entrar_escopo()
+    # Inicia contador de variáveis para este escopo
+    gerador.variaveis_por_escopo.append(0)
     # Gera pulo para não executar declaração do procedure
     instrucao_pulo = gerador.adicionar_instrucao("DSVI", -1)
     # Marca onde o procedimento começa (após o DSVI)
@@ -290,6 +299,10 @@ def p_inicio_escopo(p):
 
 def p_fim_escopo(p):
     '''fim_escopo : empty'''
+    # Desaloca todas as variáveis do escopo (parâmetros + locais)
+    num_vars = gerador.variaveis_por_escopo.pop() if gerador.variaveis_por_escopo else 0
+    if num_vars > 0:
+        gerador.adicionar_instrucao("DESM", num_vars)
     gerador.semantico.sair_escopo()
     # Adiciona retorno
     gerador.adicionar_instrucao("RTPR")
@@ -322,7 +335,12 @@ def p_parameters(p):
                   | empty'''
     if len(p) > 2:
         # Retorna a lista de endereços dos parâmetros
-        p[0] = p[2] if p[2] else []
+        enderecos = p[2] if p[2] else []
+        # Após alocar todos os parâmetros, gera ARMZs para desempilhar da pilha
+        # Os parâmetros são desempilhados na MESMA ordem (pois pilha guarda último empilhado no topo)
+        for endereco in enderecos:
+            gerador.adicionar_instrucao("ARMZ", endereco)
+        p[0] = enderecos
     else:
         p[0] = []
 
@@ -336,6 +354,9 @@ def p_lista_par(p):
         try:
             endereco = gerador.semantico.adicionar_variavel(var_nome, tipo)
             gerador.adicionar_instrucao("ALME", 1)
+            # Incrementa contador de variáveis no escopo do procedimento
+            if gerador.variaveis_por_escopo:
+                gerador.variaveis_por_escopo[-1] += 1
             enderecos_params.append(endereco)
         except Exception as e:
             print(f"ERRO SEMÂNTICO (Parâmetros): {e}")
@@ -537,19 +558,20 @@ def p_comando_chamada(p):
         print(f"ERRO SEMÂNTICO: Procedimento '{nome_proc}' espera {num_params} argumentos, mas recebeu {len(argumentos)}.")
         return
     
-    # Para cada argumento, empilha seu valor
-    for arg_nome in argumentos:
-        try:
-            endereco_arg = gerador.semantico.verificar_declaracao(arg_nome)
-            gerador.adicionar_instrucao("CRVL", endereco_arg)
-        except Exception as e:
-            print(f"ERRO SEMÂNTICO: {e}")
-            return
+    # Calcula endereço de retorno (linha após CHPR)
+    # PUSHER será na linha atual, depois vêm num_params linhas de PARAM, depois CHPR
+    # Então retorno = linha_atual + 1 (PUSHER) + num_params (PARAMs) + 1 (CHPR) = linha_atual + num_params + 2
+    endereco_retorno = len(gerador.codigo) + num_params + 2
     
-    # Para cada parâmetro, gera ARMZ antes da chamada
-    # Desempilha na ordem reversa (o último empilhado é o primeiro a desempilhar)
-    for i in range(len(enderecos_params) - 1, -1, -1):
-        gerador.adicionar_instrucao("ARMZ", enderecos_params[i])
+    # Gera PUSHER com endereço de retorno
+    gerador.adicionar_instrucao("PUSHER", endereco_retorno)
+    
+    # Para cada argumento, gera PARAMcom o endereço do argumento
+    # IMPORTANTE: PARAMs são gerados na ordem REVERSA para que o primeiro argumento
+    # fique no topo da pilha (LIFO), permitindo desempilhamento correto com ARMZ
+    for arg_nome in reversed(argumentos):
+        endereco_arg = gerador.semantico.verificar_declaracao(arg_nome)
+        gerador.adicionar_instrucao("PARAM", endereco_arg)
     
     # Gera chamada ao procedimento
     gerador.adicionar_instrucao("CHPR", endereco_proc)
