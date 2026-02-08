@@ -2,11 +2,11 @@ import sys
 import os
 
 # ==============================================================================
-# MÁQUINA VIRTUAL - EXECUTOR DE CÓDIGO OBJETO
+# MÁQUINA HIPOTÉTICA
 # ==============================================================================
-# Esta classe simula o computador hipotético que roda as instruções geradas.
+# Esta classe simula a máquina hipotética que roda as instruções geradas.
 
-class MaquinaVirtual:
+class MaquinaHipotetica:
     def __init__(self):
         self.dados = []       # Memória de dados (Variáveis - área D)
         self.instrucoes = []  # Memória de instruções (Código - área C)
@@ -33,19 +33,25 @@ class MaquinaVirtual:
         print("\n=== INICIANDO EXECUÇÃO ===")
         print("--------------------------")
         
+        # Loop principal: executa instruções enquanto o PC não ultrapassar o código
         while self.pc < len(self.instrucoes):
+            # Busca a instrução atual apontada pelo Program Counter
             instrucao = self.instrucoes[self.pc]
             
-            # Remove comentários inline (ex: "DSVI 71 #funcao um")
+            # Remove comentários inline (tudo após '#')
             if '#' in instrucao:
                 instrucao = instrucao.split('#')[0].strip()
             
+            # Pula linhas vazias (após remoção de comentários)
             if not instrucao: 
-                self.pc += 1
-                continue
+                self.pc += 1  # Avança para próxima linha
+                continue  # Volta ao início do loop sem processar
 
+            # Separa a instrução em partes (ex: "CRCT 10" vira ["CRCT", "10"])
             partes = instrucao.split()
+            # O operador é sempre a primeira parte (ex: "CRCT", "SOMA", "DSVF")
             op = partes[0]
+            # Inicializa argumento como None (nem toda instrução tem argumento)
             arg = None
             
             if len(partes) > 1:
@@ -104,7 +110,7 @@ class MaquinaVirtual:
                     self.dados[endereco] = valor
                 self.pc += 1
                 
-            elif op == 'SOMA':
+            elif op == 'SOMA': # Soma
                 if len(self.pilha) < 2: 
                     print(f"Erro (Linha {self.pc}): Pilha vazia para SOMA. Pilha atual: {self.pilha}")
                     sys.exit(1)
@@ -113,7 +119,7 @@ class MaquinaVirtual:
                 self.pilha.append(a + b)
                 self.pc += 1
                 
-            elif op == 'SUBT':
+            elif op == 'SUBT': # Subtração
                 if len(self.pilha) < 2:
                     print(f"Erro (Linha {self.pc}): Pilha vazia para SUBT. Pilha atual: {self.pilha}")
                     sys.exit(1)
@@ -122,7 +128,7 @@ class MaquinaVirtual:
                 self.pilha.append(a - b)
                 self.pc += 1
                 
-            elif op == 'MULT':
+            elif op == 'MULT': # Multiplicação
                 if len(self.pilha) < 2:
                     print(f"Erro (Linha {self.pc}): Pilha vazia para MULT. Pilha atual: {self.pilha}")
                     sys.exit(1)
@@ -131,7 +137,7 @@ class MaquinaVirtual:
                 self.pilha.append(a * b)
                 self.pc += 1
                 
-            elif op == 'DIVI':
+            elif op == 'DIVI': # Divisão
                 if len(self.pilha) < 2:
                     print(f"Erro (Linha {self.pc}): Pilha vazia para DIVI. Pilha atual: {self.pilha}")
                     sys.exit(1)
@@ -253,8 +259,8 @@ class MaquinaVirtual:
                 self.pc += 1
 
 if __name__ == "__main__":
-    # Teste isolado (se rodar direto o executor.py)
-    vm = MaquinaVirtual()
+    # Teste isolado: Executa o código objeto diretamente sem passar pela compilação
+    vm = MaquinaHipotetica()
     # Tenta achar o arquivo padrão subindo um nível
     path_padrao = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Dados', 'codigo_objeto.txt')
     

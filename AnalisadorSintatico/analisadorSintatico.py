@@ -83,15 +83,14 @@ class GeradorCodigo:
         # Reescrevo a linha com o destino correto (ex: "DSVF 50")
         self.codigo[indice_instrucao] = f"{instrucao_atual} {destino}"
 
-# Crio uma instância global do gerador para ser acessada por todas as regras do parser abaixo.
+# Cria uma instância global do gerador para ser acessada por todas as regras do parser abaixo.
 gerador = GeradorCodigo()
 
 
 # ==============================================================================
 # PARTE 1: ANALISADOR LÉXICO (DEFINIÇÕES DE TOKENS)
 # ==============================================================================
-# Aqui eu defino o vocabulário da linguagem. O PLY usa isso para quebrar o texto em tokens.
-
+# Vocabulário da linguagem. O PLY usa isso para quebrar o texto em tokens.
 # Lista oficial de tokens que meu compilador reconhece.
 tokens = (
     'PROGRAM', 'VAR', 'INTEGER', 'REAL', 'PROCEDURE',
@@ -103,7 +102,7 @@ tokens = (
 )
 
 # Dicionário de Palavras Reservadas.
-# Eu uso isso para distinguir se 'begin' é uma variável (identificador) ou o comando BEGIN.
+# Usa-se isso para distinguir se 'begin' é uma variável (identificador) ou o comando BEGIN.
 reserved = {
     'program': 'PROGRAM', 'var': 'VAR', 'integer': 'INTEGER', 'real': 'REAL',
     'procedure': 'PROCEDURE', 'begin': 'BEGIN', 'end': 'END', 'if': 'IF',
@@ -112,8 +111,8 @@ reserved = {
 }
 
 # --- Expressões Regulares Simples (Regex) ---
-# Aqui eu ensino o Lexer a reconhecer os símbolos visuais da linguagem.
-
+# O Lexer é ensinado a reconhecer os símbolos visuais da linguagem.
+# As variáveis com t_ também são usadas automaticamente pelo Python Lex
 t_ASSIGN = r':='     # Atribuição
 t_EQ = r'='          # Igual
 t_NEQ = r'<>'        # Diferente (Pascal usa <>)
@@ -137,30 +136,30 @@ t_DOLLAR = r'\$'     # Cifrão (delimitador de bloco na gramática LALG)
 t_ignore = ' \t'
 
 # --- Funções para Tokens Complexos ---
-# Para tokens que exigem processamento (como converter string para número), eu uso funções.
+# Para tokens que exigem processamento (como converter string para número), usa-se funções.
 
 def t_COMMENT(t):
     # Expressão Regular para ignorar comentários.
     # Pega tudo entre { } OU tudo entre /* */
     r'\{[^}]*\}|/\*[\s\S]*?\*/'
-    pass # 'pass' significa: não gere token, apenas ignore e continue.
+    pass # Não gera token, apenas ignora e continua.
 
 def t_NUM_REAL(t):
     # Reconhece números com ponto flutuante (ex: 10.5)
     r'\d+\.\d+'
-    t.value = float(t.value) # Converto o texto para float do Python
+    t.value = float(t.value) # Converte o texto para float do Python
     return t
 
 def t_NUM_INT(t):
     # Reconhece números inteiros (apenas dígitos)
     r'\d+'
-    t.value = int(t.value) # Converto o texto para int do Python
+    t.value = int(t.value) # Converte o texto para int do Python
     return t
 
 def t_IDENT(t):
     # Reconhece identificadores. Regra: Deve começar com letra.
     r'[a-zA-Z][a-zA-Z0-9_]*'
-    # Aqui eu verifico: se a palavra achada está no dicionário 'reserved',
+    # Se a palavra achada está no dicionário 'reserved',
     # então é uma palavra reservada (ex: IF), senão é um IDENT (nome de variável).
     t.type = reserved.get(t.value.lower(), 'IDENT')
     return t
@@ -173,21 +172,21 @@ def t_newline(t):
 def t_error(t):
     # Tratamento de erro léxico: Caractere inválido encontrado.
     print(f"Erro Léxico: Caractere ilegal '{t.value[0]}' na linha {t.lexer.lineno}")
-    t.lexer.skip(1) # Pulo o caractere ruim e tento continuar.
+    t.lexer.skip(1) # Pula o caractere ruim
 
-# Inicializo o Lexer com as regras acima
+# Inicializa o Lexer com as regras acima
+# o PLY (Python Lex-Yacc) detecta as funções que usam t_ e as utiliza ao chamar o comando abaixo
 lexer = lex.lex()
 
 # --- Função Auxiliar de Saída ---
 
 def gerar_arquivo_tokens_formatado(codigo_fonte):
     """
-    Esta função não faz parte da compilação em si, mas foi pedida no projeto.
-    Ela gera um arquivo 'tokens.txt' listando todos os tokens encontrados,
+    Esta função gera um arquivo 'tokens.txt' listando todos os tokens encontrados,
     formatados como [Tipo, Valor].
     """
     print(f"--- Gerando arquivo de tokens em: {ARQUIVO_TOKENS} ---")
-    # Crio um lexer temporário só para isso
+    # Cria um lexer temporário só para isso
     meu_lexer = lex.lex()
     meu_lexer.input(codigo_fonte)
     lista_saida = []
@@ -196,7 +195,7 @@ def gerar_arquivo_tokens_formatado(codigo_fonte):
         tok = meu_lexer.token()
         if not tok: break # Fim do arquivo
         
-        # Traduzo os nomes técnicos do PLY para nomes amigáveis
+        # Traduz os nomes técnicos do PLY para nomes legíveis
         tipo_formatado = ""
         if tok.type in reserved.values(): tipo_formatado = "Palavras Reservadas"
         elif tok.type == 'IDENT': tipo_formatado = "Identificador"
@@ -215,7 +214,7 @@ def gerar_arquivo_tokens_formatado(codigo_fonte):
 # ==============================================================================
 # PARTE 2: ANALISADOR SINTÁTICO E SEMÂNTICO (PARSER)
 # ==============================================================================
-# Aqui defino a gramática BNF. Cada função 'p_' representa uma regra de produção.
+# Gramática BNF. Cada função 'p_' representa uma regra de produção.
 # Quando o parser reconhece a estrutura, ele executa o código Python dentro da função.
 
 def p_programa(p):
@@ -233,15 +232,20 @@ def p_corpo(p):
 # --- Regras de Declaração (dc) ---
 
 def p_dc(p):
-    # CORREÇÃO AQUI: Adicionado 'dc_p mais_dc' para permitir recursão de procedimentos
     '''dc : dc_v mais_dc
           | dc_p mais_dc
           | empty'''
+    # Declarações podem ser: variáveis (dc_v), procedimentos (dc_p) ou nenhuma (empty).
+    # Permite múltiplas declarações encadeadas através da regra 'mais_dc'.
+    # Exemplo: var a: integer; var b: real; procedure teste begin end
     pass
 
 def p_mais_dc(p):
     '''mais_dc : SEMICOLON dc
                | empty'''
+    # Permite encadear múltiplas declarações separadas por ponto e vírgula.
+    # Se não houver ponto e vírgula, assume que não há mais declarações (empty).
+    # Exemplo: var a: integer; var b: real (o ; permite continuar declarando)
     pass
 
 def p_dc_v(p):
@@ -285,7 +289,7 @@ def p_mais_var(p):
     else: p[0] = [] # Fim da lista
 
 # --- Regras de Procedures ---
-# Aqui adicionamos os marcadores para abrir e fechar escopo corretamente
+# Aqui adiciono os marcadores para abrir e fechar escopo corretamente
 def p_inicio_escopo(p):
     '''inicio_escopo : empty'''
     gerador.semantico.entrar_escopo()
@@ -378,17 +382,19 @@ def p_mais_par(p):
         p[0] = []
 
 def p_corpo_p(p):
-    # CORREÇÃO AQUI: Removido 'SEMICOLON' do final.
-    # O ponto e vírgula é tratado pela regra 'mais_dc' lá em cima.
     '''corpo_p : dc_loc BEGIN comandos END'''
+    # Corpo de um procedimento: declarações locais seguidas de bloco begin-end.
+    # Exemplo: var x: integer; begin x := 10; write(x) end
     pass
 
-# --- CORREÇÃO AQUI: Declarações Locais ---
-# Ajustei aqui para não exigir ponto e vírgula no final da última declaração
+# --- Declarações Locais ---
+# Variáveis declaradas dentro de procedimentos (escopo local)
 
 def p_dc_loc(p):
     '''dc_loc : dc_v mais_dcloc
               | empty'''
+    # Declarações locais de variáveis dentro de procedimentos.
+    # Pode ter várias declarações (mais_dcloc) ou nenhuma (empty).
     pass
 
 def p_mais_dcloc(p):
@@ -403,11 +409,15 @@ def p_mais_dcloc(p):
 
 def p_comandos(p):
     '''comandos : comando mais_comandos'''
+    # Reconhece uma sequência de comandos: um comando seguido de mais comandos.
+    # Exemplo: a := 10; b := 20; write(a)
     pass
 
 def p_mais_comandos(p):
     '''mais_comandos : comandos
                      | empty'''
+    # Permite encadear múltiplos comandos ou finalizar a sequência (empty).
+    # Recursivo: permite quantos comandos forem necessários.
     pass
 
 # --- REGRA AUXILIAR PARA PONTO E VÍRGULA OPCIONAL ---
@@ -484,17 +494,18 @@ def p_comando_if(p):
 
 def p_condicao(p):
     '''condicao : expressao relacao expressao'''
-    # CORREÇÃO: A relacao (p[2]) agora retorna a string do operador (ex: '>=')
-    # O código da expressão 1 e 2 já foi gerado antes de chegarmos aqui.
-    # Agora geramos a comparação com base no operador.
-    op = p[2]
-    if op == '=': gerador.adicionar_instrucao("CPIG")
-    elif op == '<>': gerador.adicionar_instrucao("CDIF")
-    elif op == '>=': gerador.adicionar_instrucao("CPMA") # Maior Igual
-    elif op == '<=': gerador.adicionar_instrucao("CPMI") # Menor Igual
-    elif op == '>': gerador.adicionar_instrucao("CMAI")
-    elif op == '<': gerador.adicionar_instrucao("CMEN")
+    # Avalia condições relacionais (ex: a > 10, b <= 5).
+    # As expressões já foram calculadas e estão na pilha.
+    # Gera a instrução de comparação apropriada seguida de desvio condicional (DSVF).
+    op = p[2]  # Operador relacional retornado pela regra 'relacao'
+    if op == '=': gerador.adicionar_instrucao("CPIG")    # Igual
+    elif op == '<>': gerador.adicionar_instrucao("CDIF") # Diferente
+    elif op == '>=': gerador.adicionar_instrucao("CPMA") # Maior ou Igual
+    elif op == '<=': gerador.adicionar_instrucao("CPMI") # Menor ou Igual
+    elif op == '>': gerador.adicionar_instrucao("CMAI")  # Maior
+    elif op == '<': gerador.adicionar_instrucao("CMEN")  # Menor
     
+    # Gera desvio condicional com endereço placeholder (-1) para backpatching posterior
     instrucao_salto = gerador.adicionar_instrucao("DSVF", -1)
     p[0] = instrucao_salto
 
@@ -521,7 +532,7 @@ def p_comando_while(p):
     # p[2] é o índice do DSVF gerado pela condição
     indice_dsvf = p[2]
     
-    # Precisamos voltar para o INÍCIO da avaliação da condição,
+    # Preciso voltar para o INÍCIO da avaliação da condição,
     # antes dos CRVLs que carregam os operandos.
     # A condição gera: CRVL CRVL comparação DSVF
     # Então o início é 3 instruções antes do DSVF
@@ -566,8 +577,8 @@ def p_comando_chamada(p):
     # Gera PUSHER com endereço de retorno
     gerador.adicionar_instrucao("PUSHER", endereco_retorno)
     
-    # Para cada argumento, gera PARAMcom o endereço do argumento
-    # IMPORTANTE: PARAMs são gerados na ordem REVERSA para que o primeiro argumento
+    # Para cada argumento, gera PARAM com o endereço do argumento
+    # PARAMs são gerados na ordem REVERSA para que o primeiro argumento
     # fique no topo da pilha (LIFO), permitindo desempilhamento correto com ARMZ
     for arg_nome in reversed(argumentos):
         endereco_arg = gerador.semantico.verificar_declaracao(arg_nome)
@@ -579,9 +590,14 @@ def p_comando_chamada(p):
 def p_lista_arg(p):
     '''lista_arg : LPAREN argumentos RPAREN
                  | empty'''
+    # Reconhece a lista de argumentos em uma chamada de procedimento.
+    # Pode ser: (arg1, arg2, arg3) ou vazia quando não há parênteses.
+    # Exemplo: soma(a, b) ou teste (sem argumentos)
     if len(p) > 2:
+        # Tem parênteses: retorna a lista de nomes dos argumentos
         p[0] = p[2] if p[2] else []
     else:
+        # Não tem parênteses: procedimento sem argumentos
         p[0] = []
 
 def p_argumentos(p):
@@ -600,8 +616,7 @@ def p_mais_ident(p):
     else:
         p[0] = []
 
-# --- Regras Matemáticas e Lógicas (CORRIGIDO PARA GERAÇÃO PÓS-FIXADA) ---
-
+# --- Regras Matemáticas e Lógicas ---
 def p_relacao(p):
     '''relacao : EQ
                | NEQ
@@ -610,7 +625,6 @@ def p_relacao(p):
                | GT
                | LT'''
     # Mapeio os operadores do código fonte e APENAS RETORNO O SÍMBOLO.
-    # Não gero código aqui, pois a segunda expressão ainda não foi processada.
     p[0] = p[1]
 
 def p_expressao(p):
@@ -623,7 +637,7 @@ def p_outros_termos(p):
     # GERAÇÃO DE CÓDIGO AQUI:
     # A estrutura é: expressao -> termo (já empilhado) outros_termos
     # outros_termos -> op (p[1]) termo (p[2] - já empilhado) ...
-    # Assim que p[2] termina, o segundo operando está na pilha. Hora de gerar a instrução!
+    # Assim que p[2] termina, o segundo operando está na pilha
     if len(p) > 2:
         if p[1] == '+': gerador.adicionar_instrucao("SOMA")
         elif p[1] == '-': gerador.adicionar_instrucao("SUBT")
@@ -636,18 +650,24 @@ def p_op_ad(p):
 
 def p_termo(p):
     '''termo : op_un fator mais_fatores'''
+    # Define um termo matemático: pode ter sinal negativo opcional, um fator base
+    # e operações de multiplicação/divisão encadeadas.
+    # Exemplo: -5 * 3 / 2 (op_un=-5, fator=3, mais_fatores=/2)
     pass
 
 def p_op_un(p):
     '''op_un : MINUS
              | empty'''
+    # Operador unário: reconhece o sinal de menos para números negativos.
+    # Pode ser vazio (empty) quando o número é positivo.
+    # Exemplo: -10 (tem MINUS) ou 10 (empty)
     pass
 
 def p_mais_fatores(p):
     '''mais_fatores : op_mul fator mais_fatores
                     | empty'''
     # GERAÇÃO DE CÓDIGO AQUI:
-    # Mesmo raciocínio: termo -> fator (já empilhado) mais_fatores
+    # termo -> fator (já empilhado) mais_fatores
     # mais_fatores -> op (p[1]) fator (p[2] - já empilhado) ...
     if len(p) > 2:
         if p[1] == '*': gerador.adicionar_instrucao("MULT")
@@ -656,7 +676,9 @@ def p_mais_fatores(p):
 def p_op_mul(p):
     '''op_mul : TIMES
               | DIVIDE'''
-    # Apenas retorna o operador
+    # Reconhece operadores de multiplicação (*) e divisão (/).
+    # Retorna o símbolo do operador para uso posterior na geração de código.
+    # Exemplo: 10 * 5 retorna '*', 20 / 4 retorna '/'
     p[0] = p[1]
 
 def p_fator_id(p):

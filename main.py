@@ -7,14 +7,13 @@ sys.path.append(diretorio_raiz)
 
 # Tenta importar o módulo sintático da pasta AnalisadorSintatico
 try:
-    # Assumindo que o arquivo se chama 'analisadorSintatico.py' dentro da pasta 'AnalisadorSintatico'
     from AnalisadorSintatico import analisadorSintatico
-    from CodigoObjeto import executor # Novo import da Parte 2
+    from CodigoObjeto import executor # Import da Parte 2
 except ImportError as e:
     print(f"ERRO DE IMPORTAÇÃO: {e}")
     print("Verifique se as pastas 'AnalisadorSintatico' e 'CodigoObjeto' existem e contêm os arquivos '__init__.py' (opcional) e os scripts corretos.")
     # Ajuda visual para debugging
-    print(f"Diretório Raiz detetado: {diretorio_raiz}")
+    print(f"Diretório Raiz detectado: {diretorio_raiz}")
     print(f"Conteúdo do PATH: {sys.path}")
     sys.exit(1)
 
@@ -33,7 +32,7 @@ def main():
     print("      COMPILADOR LALG - PASCAL (PARTE 1)      ")
     print("==============================================\n")
 
-    # Lê o código fonte uma única vez
+    # Lê o código fonte (Pascal) do arquivo codigo.txt
     codigo_fonte = ler_codigo()
 
     # --- ETAPA 1: ANÁLISE LÉXICA ---
@@ -47,7 +46,7 @@ def main():
         sys.exit(1)
 
     # --- ETAPA 2, 3 e 4: SINTÁTICO, SEMÂNTICO E GERAÇÃO ---
-    # Como usamos compilador Ascendente (Bottom-Up), essas etapas ocorrem juntas.
+    # Com o compilador Ascendente (Bottom-Up), essas etapas ocorrem juntas.
     try:
         print(">>> Etapa 2: Análise Sintática")
         print(">>> Etapa 3: Análise Semântica")
@@ -74,13 +73,12 @@ def main():
 
     # --- PARTE 2: EXECUÇÃO ---
     print("==============================================")
-    print(">>> Iniciando Parte 2: Execução da Máquina Virtual")
+    print(">>> Iniciando Parte 2: Execução da Máquina Hipotética")
     print("==============================================")
     
     try:
-        vm = executor.MaquinaVirtual()
+        vm = executor.MaquinaHipotetica()
         # O executor já sabe onde buscar o arquivo gerado (na pasta Dados)
-        # Passamos o caminho completo para garantir
         caminho_obj_completo = os.path.join(diretorio_raiz, 'Dados', 'codigo_objeto.txt')
         vm.carregar(caminho_obj_completo)
         vm.executar()
@@ -88,7 +86,7 @@ def main():
         print(f"   [ERRO CRÍTICO NA EXECUÇÃO]: {e}")
 
     print("==============================================")
-    print("      COMPILAÇÃO CONCLUÍDA COM SUCESSO!       ")
+    print("      COMPILAÇÃO E EXECUÇÃO CONCLUÍDA COM SUCESSO!       ")
     print("==============================================")
 
 if __name__ == "__main__":

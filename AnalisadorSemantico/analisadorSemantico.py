@@ -1,5 +1,5 @@
 # ==============================================================================
-# ANALISADOR SEMÂNTICO (COM SUPORTE A ESCOPO)
+# ANALISADOR SEMÂNTICO
 # ==============================================================================
 # Esta classe gerencia a tabela de símbolos usando uma pilha.
 # O índice 0 da lista é o escopo Global.
@@ -9,7 +9,7 @@ class AnalisadorSemantico:
     def __init__(self):
         # Inicializa a pilha com o escopo global (um dicionário vazio)
         self.tabela_escopos = [{}] 
-        # Contador para gerar endereços de memória sequenciais (simplificação da VM)
+        # Contador para gerar endereços de memória sequenciais
         self.contador_memoria = 0
 
     def entrar_escopo(self):
@@ -45,7 +45,6 @@ class AnalisadorSemantico:
         }
         
         # Aloca um endereço de memória e incrementa o contador
-        # Nota: Na VM simplificada deste projeto, endereços são sempre globais e sequenciais.
         endereco_alocado = self.contador_memoria
         self.contador_memoria += 1
         return endereco_alocado
